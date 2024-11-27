@@ -3,11 +3,14 @@ name: Generate and Deploy Results
 on:
   push:
     branches:
-      - main  # Run the workflow on pushes to the main branch
+      - main  # Run workflow when changes are pushed to the main branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Grant write permission to the GITHUB_TOKEN
 
     steps:
     - name: Checkout code
@@ -38,3 +41,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./src
+        publish_branch: gh-pages  # Specify the branch for GitHub Pages
+        force_orphan: true        # Force create the branch if it doesn't exist
