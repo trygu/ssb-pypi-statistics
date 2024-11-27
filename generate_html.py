@@ -1,14 +1,16 @@
 import pandas as pd
-import json  # Ensures valid JSON formatting
+import json
 
 def sanitize(value):
     """
-    Sanitize values to ensure safe and consistent HTML/JavaScript output.
-    Replace problematic characters such as single quotes, double quotes, and newlines.
+    Sanitize values to ensure safe JSON/JavaScript output.
+    Escape double quotes and handle NaN values.
     """
+    if pd.isna(value):
+        return None  # Replace NaN with None for JSON compatibility
     if isinstance(value, str):
-        # Escape both single and double quotes, remove newlines
-        return value.replace('"', '\\"').replace("'", "\\'").replace("\n", " ").replace("\r", " ")
+        # Escape double quotes and remove problematic newlines
+        return value.replace('"', '\\"').replace("\n", " ").replace("\r", " ")
     return value
 
 def generate_html(csv_file="./src/results.csv", template_file="./src/table_template.html", output_file="./src/index.html"):
@@ -21,17 +23,17 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
     # Sanitize the data
     sanitized_table_data = df.applymap(sanitize).to_dict(orient="records")
 
-    # Convert to JSON for valid JavaScript output
+    # Convert sanitized data to JSON string
     table_rows = json.dumps(sanitized_table_data)
 
-    # Read the template
+    # Read the HTML template
     with open(template_file, "r") as template:
         html = template.read()
 
-    # Inject rows into the TABLE_ROWS_PLACEHOLDER
+    # Inject sanitized JSON data into the HTML
     html = html.replace("<!-- TABLE_ROWS_PLACEHOLDER -->", table_rows)
 
-    # Write the output HTML file
+    # Write the final HTML file
     with open(output_file, "w") as output:
         output.write(html)
 
