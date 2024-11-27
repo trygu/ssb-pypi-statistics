@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libraries.io Results</title>
+    <!-- Include DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <h1>Libraries.io Search Results</h1>
+    <table id="resultsTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Platform</th>
+                <th>Latest Version</th>
+                <th>Last Updated</th>
+                <th>Description</th>
+                <th>Homepage</th>
+                <th>Repository</th>
+                <th>Stars</th>
+                <th>Forks</th>
+                <th>Contributors</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- CSV rows will be inserted here -->
+        </tbody>
+    </table>
+
+    <!-- Include jQuery and DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#resultsTable').DataTable();
+        });
+    </script>
+</body>
+</html>

@@ -18,6 +18,8 @@ ipykernel = ">=6.15.3"
 requests = "^2.32.3"
 pandas = "^2.2.3"
 click = "^8.1.7"
+tqdm = "^4.67.1"
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.1.3"
