@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,14 +12,17 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+
         #table-container {
             margin-top: 20px;
         }
+
         .actions {
             margin-bottom: 20px;
         }
     </style>
 </head>
+
 <body>
     <h1>Libraries.io Search Results</h1>
     <div class="actions">
@@ -41,13 +45,13 @@
             data: tableData,
             layout: "fitColumns",  // Fit columns to the width of the container
             columns: [
-                {title: "Name", field: "Name", formatter: "html", formatterParams: { target: "_blank" }},
-                {title: "Platform", field: "Platform"},
-                {title: "Latest Version", field: "Latest Version"},
-                {title: "Last Updated", field: "Last Updated"},
-                {title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" }},
-                {title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" }},
-                {title: "Downloaded At", field: "Downloaded At"},
+                { title: "Name", field: "Name", formatter: "html", formatterParams: { target: "_blank" } },
+                { title: "Platform", field: "Platform" },
+                { title: "Latest Version", field: "Latest Version" },
+                { title: "Last Updated", field: "Last Updated" },
+                { title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
+                { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
+                { title: "Downloaded At", field: "Downloaded At" },
             ],
         });
 
@@ -56,16 +60,31 @@
             table.download("csv", "results.csv");
         });
 
-        // Generate DuckDB WASM URL for the CSV
         document.getElementById("open-duckdb").addEventListener("click", () => {
             const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv"; // Actual CSV URL
+
+            // Define the queries
             const query = `
-                CREATE TABLE pypi_data AS SELECT * FROM read_csv_auto('${csvUrl}');
-                SELECT * FROM pypi_data WHERE Platform = 'PyPI'`; // Example Query
-            const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+').replace(/%0A/g, '~');
+        -- Create table from CSV
+        CREATE TABLE pypi_data AS SELECT * FROM read_csv_auto('${csvUrl}');
+        -- Select only PyPI platform data
+        SELECT * FROM pypi_data WHERE Platform = 'PyPI';
+    `;
+
+            // Encode the query properly for DuckDB WASM
+            const encodedQuery = `v0,` + encodeURIComponent(query)
+                .replace(/%20/g, '+')  // Replace spaces
+                .replace(/%0A/g, '~')  // Replace newlines
+                .replace(/'/g, '%27'); // Encode single quotes
+
+            // Construct the DuckDB WASM URL
             const duckdbUrl = `https://shell.duckdb.org/#queries=${encodedQuery}`;
+
+            // Open the DuckDB URL in a new tab
             window.open(duckdbUrl, '_blank');
         });
+
     </script>
 </body>
+
 </html>
