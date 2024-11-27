@@ -22,10 +22,10 @@
 <body>
     <h1>Libraries.io Search Results</h1>
     <div class="actions">
-        <!-- CSV Download Link -->
+        <!-- CSV Download Button -->
         <button id="download-csv">Download CSV</button>
-        <!-- DuckDB WASM Link -->
-        <a id="duckdb-link" href="#" target="_blank">Open in DuckDB WASM</a>
+        <!-- DuckDB WASM Button -->
+        <button id="open-duckdb">Open in DuckDB WASM</button>
     </div>
     <!-- Tabulator Table -->
     <div id="table-container"></div>
@@ -34,7 +34,7 @@
     <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
     <script>
         // Placeholder for table data (to be dynamically populated by the Python script)
-        <!-- TABLE_ROWS_PLACEHOLDER -->
+        const tableData = [];
 
         // Tabulator Table Configuration
         const table = new Tabulator("#table-container", {
@@ -56,11 +56,16 @@
             table.download("csv", "results.csv");
         });
 
-        // Generate DuckDB WASM URL
-        const duckdbLink = document.getElementById("duckdb-link");
-        const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv";  // Actual URL to your CSV
-        const duckdbWasmUrl = `https://shell.duckdb.org/?query=SELECT%20*%20FROM%20read_csv_auto('${encodeURIComponent(csvUrl)}');`;
-        duckdbLink.href = duckdbWasmUrl;
+        // Generate DuckDB WASM URL for the CSV
+        document.getElementById("open-duckdb").addEventListener("click", () => {
+            const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv"; // Actual CSV URL
+            const query = `
+                CREATE TABLE pypi_data AS SELECT * FROM read_csv_auto('${csvUrl}');
+                SELECT * FROM pypi_data WHERE Platform = 'PyPI'`; // Example Query
+            const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+').replace(/%0A/g, '~');
+            const duckdbUrl = `https://shell.duckdb.org/#queries=${encodedQuery}`;
+            window.open(duckdbUrl, '_blank');
+        });
     </script>
 </body>
 </html>
