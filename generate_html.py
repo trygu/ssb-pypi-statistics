@@ -31,7 +31,7 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
         html = template.read()
 
     # Inject sanitized JSON data into the HTML
-    html = html.replace("const tableData = [];", f"const tableData = '{table_rows}';")
+    html = html.replace("const tableData = [];", f"const tableData = {table_rows};")
 
     # Write the final HTML file
     with open(output_file, "w") as output:
