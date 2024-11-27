@@ -1,0 +1,16 @@
+{
+  "template": "https://github.com/statisticsnorway/ssb-project-template-stat",
+  "commit": "8d51c3c86c2e8f35f69a8a73bf22b846164093cd",
+  "checkout": "1.1.8",
+  "context": {
+    "cookiecutter": {
+      "full_name": "trygu",
+      "email": "trygve.falch@gmail.com",
+      "project_name": "ssb-pypi-statistics",
+      "description": "",
+      "license_year": "2024",
+      "_template": "https://github.com/statisticsnorway/ssb-project-template-stat"
+    }
+  },
+  "directory": null
+}
