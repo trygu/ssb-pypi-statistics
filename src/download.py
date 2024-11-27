@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import os
+from datetime import datetime, timezone
 
 def fetch_all_results(query, api_key):
     """
@@ -29,6 +30,9 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
     """
     Format the search results and save them to a CSV file.
     """
+    # Get the current timestamp in ISO 8601 format with timezone awareness
+    current_timestamp = datetime.now(timezone.utc).isoformat()
+
     formatted_results = []
     for result in results:
         formatted_results.append({
@@ -43,6 +47,7 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             "Stars": result.get("stars", 0),
             "Forks": result.get("forks", 0),
             "Contributors": result.get("contributors_count", 0),
+            "Downloaded At": current_timestamp  # Add timestamp column
         })
 
     # Save to CSV
