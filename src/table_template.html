@@ -62,25 +62,21 @@
 
         document.getElementById("open-duckdb").addEventListener("click", () => {
             const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv"; // Actual CSV URL
-
-            // Define the queries
             const query = `
         -- Create table from CSV
         CREATE TABLE pypi_data AS SELECT * FROM read_csv_auto('${csvUrl}');
+        
         -- Select only PyPI platform data
-        SELECT * FROM pypi_data WHERE Platform = 'PyPI';
-    `;
+        SELECT * FROM pypi_data WHERE Platform = 'PyPI';`; // Example Query
 
-            // Encode the query properly for DuckDB WASM
-            const encodedQuery = `v0,` + encodeURIComponent(query)
-                .replace(/%20/g, '+')  // Replace spaces
-                .replace(/%0A/g, '~')  // Replace newlines
-                .replace(/'/g, '%27'); // Encode single quotes
+            // Encode query for DuckDB WASM
+            const encodedQuery = encodeURIComponent(query)
+                .replace(/%20/g, ' ') // Replace %20 with space
+                .replace(/%0A/g, '~') // Replace newline with ~
+                .replace(/%2F/g, '/') // Ensure slashes are preserved
+                .replace(/%27/g, "'"); // Ensure single quotes are preserved
 
-            // Construct the DuckDB WASM URL
             const duckdbUrl = `https://shell.duckdb.org/#queries=${encodedQuery}`;
-
-            // Open the DuckDB URL in a new tab
             window.open(duckdbUrl, '_blank');
         });
 
