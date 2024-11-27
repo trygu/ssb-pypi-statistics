@@ -3,14 +3,14 @@ name: Generate and Deploy Results
 on:
   push:
     branches:
-      - main  # Run workflow when changes are pushed to the main branch
+      - main  # Run the workflow on pushes to the main branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write  # Grant write permission to the GITHUB_TOKEN
+      contents: write  # Allow pushing to the gh-pages branch
 
     steps:
     - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: 3.11
 
     - name: Install dependencies
       run: |
@@ -40,6 +40,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./src
-        publish_branch: gh-pages  # Specify the branch for GitHub Pages
-        force_orphan: true        # Force create the branch if it doesn't exist
+        publish_dir: ./src  # Deploy only the contents of the ./src folder
+        publish_branch: gh-pages
+        enable_jekyll: false  # Disable Jekyll to prioritize index.html
