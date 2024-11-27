@@ -1,12 +1,14 @@
 import pandas as pd
+import json  # Ensures valid JSON formatting
 
 def sanitize(value):
     """
     Sanitize values to ensure safe and consistent HTML/JavaScript output.
-    Replace problematic characters such as quotes and newlines.
+    Replace problematic characters such as single quotes, double quotes, and newlines.
     """
     if isinstance(value, str):
-        return value.replace('"', '\\"').replace("\n", " ").replace("\r", " ")
+        # Escape both single and double quotes, remove newlines
+        return value.replace('"', '\\"').replace("'", "\\'").replace("\n", " ").replace("\r", " ")
     return value
 
 def generate_html(csv_file="./src/results.csv", template_file="./src/table_template.html", output_file="./src/index.html"):
@@ -19,8 +21,8 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
     # Sanitize the data
     sanitized_table_data = df.applymap(sanitize).to_dict(orient="records")
 
-    # Generate JavaScript-compatible JSON rows for Tabulator
-    table_rows = ",\n".join([str(row).replace("'", '"') for row in sanitized_table_data])
+    # Convert to JSON for valid JavaScript output
+    table_rows = json.dumps(sanitized_table_data)
 
     # Read the template
     with open(template_file, "r") as template:
