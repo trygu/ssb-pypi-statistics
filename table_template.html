@@ -4,38 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Libraries.io Results</title>
-    <!-- Include DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- Tabulator CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #table-container {
+            margin-top: 20px;
+        }
+        .actions {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Libraries.io Search Results</h1>
-    <table id="resultsTable" class="display" style="width:100%">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Platform</th>
-                <th>Latest Version</th>
-                <th>Last Updated</th>
-                <th>Description</th>
-                <th>Homepage</th>
-                <th>Repository</th>
-                <th>Stars</th>
-                <th>Forks</th>
-                <th>Contributors</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- CSV rows will be inserted here -->
-        </tbody>
-    </table>
+    <div class="actions">
+        <!-- CSV Download Link -->
+        <button id="download-csv">Download CSV</button>
+        <!-- DuckDB WASM Link -->
+        <a id="duckdb-link" href="#" target="_blank">Open in DuckDB WASM</a>
+    </div>
+    <!-- Tabulator Table -->
+    <div id="table-container"></div>
 
-    <!-- Include jQuery and DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- Tabulator JS -->
+    <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('#resultsTable').DataTable();
+        // Placeholder for table data (to be dynamically populated by the Python script)
+        const tableData = [
+            <!-- TABLE_ROWS_PLACEHOLDER -->
+        ];
+
+        // Tabulator Table Configuration
+        const table = new Tabulator("#table-container", {
+            data: tableData,
+            layout: "fitColumns",  // Fit columns to the width of the container
+            columns: [
+                {title: "Name", field: "Name", formatter: "html", formatterParams: { target: "_blank" }},
+                {title: "Platform", field: "Platform"},
+                {title: "Version", field: "Version"},
+                {title: "Last Updated", field: "Updated"},
+                {title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" }},
+                {title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" }},
+            ],
         });
+
+        // CSV Download Button
+        document.getElementById("download-csv").addEventListener("click", () => {
+            table.download("csv", "results.csv");
+        });
+
+        // Generate DuckDB WASM URL
+        const duckdbLink = document.getElementById("duckdb-link");
+        const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv";  // Actual URL to your CSV
+        const duckdbWasmUrl = `https://shell.duckdb.org/?query=SELECT%20*%20FROM%20read_csv_auto('${encodeURIComponent(csvUrl)}');`;
+        duckdbLink.href = duckdbWasmUrl;
     </script>
 </body>
 </html>

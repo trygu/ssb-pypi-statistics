@@ -7,28 +7,16 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
     # Read the CSV into a DataFrame
     df = pd.read_csv(csv_file)
     
-    # Generate HTML rows
-    rows = ""
-    for _, row in df.iterrows():
-        rows += "<tr>"
-        rows += f"<td>{row['Name']}</td>"
-        rows += f"<td>{row['Platform']}</td>"
-        rows += f"<td>{row['Latest Version']}</td>"
-        rows += f"<td>{row['Last Updated']}</td>"
-        rows += f"<td>{row['Description']}</td>"
-        rows += f"<td><a href='{row['Homepage']}'>Homepage</a></td>"
-        rows += f"<td><a href='{row['Repository']}'>Repository</a></td>"
-        rows += f"<td>{row['Stars']}</td>"
-        rows += f"<td>{row['Forks']}</td>"
-        rows += f"<td>{row['Contributors']}</td>"
-        rows += "</tr>"
+    # Generate JavaScript-compatible JSON rows for Tabulator
+    table_data = df.to_dict(orient="records")
+    table_rows = ",\n".join([str(row).replace("'", '"') for row in table_data])
 
     # Read the template
     with open(template_file, "r") as template:
         html = template.read()
 
-    # Inject rows into the template
-    html = html.replace("<!-- CSV rows will be inserted here -->", rows)
+    # Inject rows into the TABLE_ROWS_PLACEHOLDER
+    html = html.replace("<!-- TABLE_ROWS_PLACEHOLDER -->", table_rows)
 
     # Write the output HTML file
     with open(output_file, "w") as output:
