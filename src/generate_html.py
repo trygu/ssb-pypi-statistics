@@ -1,6 +1,9 @@
 import pandas as pd
 
-def generate_html(csv_file, template_file, output_file):
+def generate_html(csv_file="./src/results.csv", template_file="./src/table_template.html", output_file="./src/index.html"):
+    """
+    Generate an HTML page from the CSV data using a template.
+    """
     # Read the CSV into a DataFrame
     df = pd.read_csv(csv_file)
     
@@ -31,11 +34,7 @@ def generate_html(csv_file, template_file, output_file):
     with open(output_file, "w") as output:
         output.write(html)
 
-if __name__ == "__main__":
-    # Paths
-    csv_file = "results.csv"
-    template_file = "table_template.html"
-    output_file = "index.html"
+    print(f"HTML file generated at '{output_file}'.")
 
-    # Generate the HTML file
-    generate_html(csv_file, template_file, output_file)
+if __name__ == "__main__":
+    generate_html()

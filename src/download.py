@@ -25,7 +25,7 @@ def fetch_all_results(query, api_key):
 
     return all_results
 
-def save_results_to_csv(results, output_file="results.csv"):
+def save_results_to_csv(results, output_file="./src/results.csv"):
     """
     Format the search results and save them to a CSV file.
     """
