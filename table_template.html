@@ -62,20 +62,25 @@
 
         document.getElementById("open-duckdb").addEventListener("click", () => {
             const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv";
+
+            // Define the query as plain text
             const query = `
         -- Create table from CSV
         CREATE TABLE pypi_data AS SELECT * FROM read_csv_auto('${csvUrl}');
         
         -- Select only PyPI platform data
-        SELECT Name, Platform, "Latest Version", "Last Updated" FROM pypi_data WHERE Platform = 'PyPI';`;
+        SELECT Name, Platform, "Latest Version", "Last Updated" FROM pypi_data WHERE Platform = 'PyPI';
+    `;
 
+            // Encode the query for DuckDB Web Shell
             const encodedQuery = encodeURIComponent(query)
-                .replace(/%20/g, ' ')
-                .replace(/%0A/g, '~')
-                .replace(/%2F/g, '/')
-                .replace(/%27/g, "'");
+                .replace(/%0A/g, '~')  // Newline replaced with '~'
+                .replace(/'/g, '%27'); // Encode single quotes properly
 
-            const duckdbUrl = `https://shell.duckdb.org/#queries=v0,${encodedQuery}~`;
+            // Construct the DuckDB Web Shell URL
+            const duckdbUrl = `https://shell.duckdb.org/#queries=v0,${encodedQuery}`;
+
+            // Open in a new tab
             window.open(duckdbUrl, '_blank');
         });
 
