@@ -13,14 +13,19 @@
             margin: 20px;
         }
 
+        h1 {
+            font-size: 2rem; /* Adjust heading font size */
+        }
+
         #table-container {
             margin-top: 20px;
+            font-size: 0.9rem; /* Adjust table font size */
         }
 
         .actions {
             margin-bottom: 20px;
             display: flex;
-            gap: 10px;
+            gap: 10px; /* Spacing between buttons */
         }
 
         .action-button {
@@ -30,11 +35,30 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            text-decoration: none; /* Ensure the text inside links isn't underlined */
+            text-align: center; /* Center the text */
+            font-size: 1rem; /* Adjust button font size */
+            display: inline-block; /* Ensure consistency for anchor buttons */
         }
 
         .action-button:hover {
+            background-color: #0056b3;
+        }
+
+        button.action-button {
+            all: unset; /* Reset default browser styles for buttons */
+            display: inline-block; /* Ensure consistency with anchor buttons */
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        button.action-button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -48,7 +72,9 @@
         <!-- DuckDB WASM Button -->
         <a id="duckdb-button" class="action-button"
             href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
-            target="_blank">Open in DuckDB Web Shell</a>
+            target="_blank">
+            Open in DuckDB Web Shell
+        </a>
     </div>
     <!-- Tabulator Table -->
     <div id="table-container"></div>
@@ -62,7 +88,7 @@
         // Tabulator Table Configuration
         const table = new Tabulator("#table-container", {
             data: tableData,
-            layout: "fitColumns", // Fit columns to the width of the container
+            layout: "fitColumns",  // Fit columns to the width of the container
             columns: [
                 { title: "Name", field: "Name", formatter: "html", formatterParams: { target: "_blank" } },
                 { title: "Platform", field: "Platform" },
