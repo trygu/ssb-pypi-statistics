@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,24 +11,35 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-
         #table-container {
             margin-top: 20px;
         }
-
         .actions {
             margin-bottom: 20px;
         }
+        .action-button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .action-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
-
 <body>
     <h1>Libraries.io Search Results</h1>
     <div class="actions">
         <!-- CSV Download Button -->
-        <button id="download-csv">Download CSV</button>
+        <button id="download-csv" class="action-button">Download CSV</button>
         <!-- DuckDB WASM Button -->
-        <button id="open-duckdb">Open in DuckDB WASM</button>
+        <a id="duckdb-button" class="action-button" href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~" target="_blank">
+            Open in DuckDB Web Shell
+        </a>
     </div>
     <!-- Tabulator Table -->
     <div id="table-container"></div>
@@ -38,20 +48,20 @@
     <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
     <script>
         // Placeholder for table data (to be dynamically populated by the Python script)
-        const tableData = [];
+        const tableData = []; // Replace with actual data if needed
 
         // Tabulator Table Configuration
         const table = new Tabulator("#table-container", {
             data: tableData,
             layout: "fitColumns",  // Fit columns to the width of the container
             columns: [
-                { title: "Name", field: "Name", formatter: "html", formatterParams: { target: "_blank" } },
-                { title: "Platform", field: "Platform" },
-                { title: "Latest Version", field: "Latest Version" },
-                { title: "Last Updated", field: "Last Updated" },
-                { title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
-                { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
-                { title: "Downloaded At", field: "Downloaded At" },
+                {title: "Name", field: "Name", formatter: "html", formatterParams: { target: "_blank" }},
+                {title: "Platform", field: "Platform"},
+                {title: "Latest Version", field: "Latest Version"},
+                {title: "Last Updated", field: "Last Updated"},
+                {title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" }},
+                {title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" }},
+                {title: "Downloaded At", field: "Downloaded At"},
             ],
         });
 
@@ -59,32 +69,6 @@
         document.getElementById("download-csv").addEventListener("click", () => {
             table.download("csv", "results.csv");
         });
-
-        document.getElementById("open-duckdb").addEventListener("click", () => {
-            const csvUrl = "https://trygu.github.io/ssb-pypi-statistics/results.csv";
-
-            // Define the query as plain text
-            const query = `
-        -- Create table from CSV
-        CREATE TABLE pypi_data AS SELECT * FROM read_csv_auto('${csvUrl}');
-        
-        -- Select only PyPI platform data
-        SELECT Name, Platform, "Latest Version", "Last Updated" FROM pypi_data WHERE Platform = 'PyPI';
-    `;
-
-            // Encode the query for DuckDB Web Shell
-            const encodedQuery = encodeURIComponent(query)
-                .replace(/%0A/g, '~')  // Newline replaced with '~'
-                .replace(/'/g, '%27'); // Encode single quotes properly
-
-            // Construct the DuckDB Web Shell URL
-            const duckdbUrl = `https://shell.duckdb.org/#queries=v0,${encodedQuery}`;
-
-            // Open in a new tab
-            window.open(duckdbUrl, '_blank');
-        });
-
     </script>
 </body>
-
 </html>
