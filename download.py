@@ -35,20 +35,24 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
 
     formatted_results = []
     for result in results:
-        formatted_results.append({
-            "Name": result.get("name"),
-            "Platform": result.get("platform"),
-            "Latest Version": result.get("latest_release_number"),
-            "Last Updated": result.get("latest_release_published_at"),
-            "Description": result.get("description"),
-            "Homepage": result.get("homepage"),
-            "Repository": result.get("repository_url"),
-            "Keywords": ", ".join(result.get("keywords", [])),
-            "Stars": result.get("stars", 0),
-            "Forks": result.get("forks", 0),
-            "Contributors": result.get("contributors_count", 0),
-            "Downloaded At": current_timestamp  # Add timestamp column
-        })
+        repository_url = result.get("repository_url")
+        
+        # Check for repository_url containing 'github.com/statisticsnorway'
+        if repository_url and "github.com/statisticsnorway" in repository_url:
+            formatted_results.append({
+                "Name": result.get("name"),
+                "Platform": result.get("platform"),
+                "Latest Version": result.get("latest_release_number"),
+                "Last Updated": result.get("latest_release_published_at"),
+                "Description": result.get("description"),
+                "Homepage": result.get("homepage"),
+                "Repository": repository_url,
+                "Contributors": result.get("contributors_count", 0),  # Add contributors column
+                "Keywords": ", ".join(result.get("keywords", [])),
+                "Stars": result.get("stars", 0),
+                "Forks": result.get("forks", 0),
+                "Downloaded At": current_timestamp  # Add timestamp column
+            })
 
     # Save to CSV
     df = pd.DataFrame(formatted_results)
