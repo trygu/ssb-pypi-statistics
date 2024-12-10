@@ -50,8 +50,8 @@
         }
 
         .sparkline {
-            width: 100px;
-            height: 30px;
+            width: 100px !important;
+            height: 30px !important;
         }
     </style>
 </head>
@@ -83,15 +83,15 @@
     <script>
         const tableData = [];
         const totalPackages = 0;
-        const platformCounts = {};
-        const platformActivity = {};
+        const platformCounts = {}; // Example: {"Maven": 54, "Pypi": 52, "NPM": 9}
+        const platformActivity = {}; // Example: {"Maven": {"2020-01": 5, "2020-02": 10}, "Pypi": {"2020-01": 3}}
 
         console.log("Injected Data:", { tableData, totalPackages, platformCounts, platformActivity });
 
         // Update Total Package Count
         document.getElementById("total-packages").textContent = totalPackages;
 
-        // Populate Platform Counts Using Chart.js Sparklines
+        // Populate Platform Counts and Sparklines
         const platformList = document.getElementById("platform-counts");
 
         function drawSparkline(canvasId, labels, data) {
@@ -116,12 +116,12 @@
                 },
                 options: {
                     maintainAspectRatio: false,
+                    responsive: false, // Disable responsiveness
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
                         y: { display: false }
-                    },
-                    responsive: true
+                    }
                 }
             });
         }
@@ -131,7 +131,7 @@
                 const li = document.createElement("li");
                 li.innerHTML = `
                     <span>${platform}: ${count} packages</span>
-                    <canvas id="sparkline-${platform}" class="sparkline"></canvas>
+                    ${platformActivity[platform] ? `<canvas id="sparkline-${platform}" class="sparkline"></canvas>` : ''}
                 `;
                 platformList.appendChild(li);
 
