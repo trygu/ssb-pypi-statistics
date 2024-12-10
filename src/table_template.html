@@ -48,6 +48,11 @@
             margin-bottom: 20px;
             font-size: 1.1rem;
         }
+
+        .sparkline {
+            width: 80px;
+            height: 30px;
+        }
     </style>
 </head>
 
@@ -62,8 +67,6 @@
 
     <div class="actions">
         <button id="download-csv" class="action-button">Download CSV</button>
-
-        <!-- DuckDB Button -->
         <a id="duckdb-button" class="action-button"
             href="https://shell.duckdb.org/#queries=v0,%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
             target="_blank">
@@ -100,16 +103,19 @@
                         label: 'Activity',
                         data: data,
                         borderColor: '#007BFF',
+                        borderWidth: 1.5,
                         fill: false,
-                        tension: 0.4
+                        tension: 0.3
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
                         y: { display: false }
-                    }
+                    },
+                    responsive: true
                 }
             });
         }
@@ -119,7 +125,7 @@
                 const li = document.createElement("li");
                 li.innerHTML = `
                     <span>${platform}: ${count} packages</span>
-                    <canvas id="sparkline-${platform}" width="100" height="30"></canvas>
+                    <canvas id="sparkline-${platform}" class="sparkline"></canvas>
                 `;
                 platformList.appendChild(li);
 
