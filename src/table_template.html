@@ -76,24 +76,18 @@
 
     <div id="table-container"></div>
 
-    <!-- Include Tabulator and Sparklines.js -->
-    <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sparklines/source/sparkline.js"></script>
-
     <script>
         const tableData = [];
         const totalPackages = 0;
         const platformCounts = {};
-        const platformActivity = {};
-
-        console.log("Injected Data:", { tableData, totalPackages, platformCounts, platformActivity });
-
+        const platformActivity = {}; 
+        
         // Update Total Package Count
         document.getElementById("total-packages").textContent = totalPackages;
-
+    
         // Populate Platform Counts with Sparklines
         const platformList = document.getElementById("platform-counts");
-
+    
         if (typeof platformCounts === "object" && Object.keys(platformCounts).length > 0) {
             Object.entries(platformCounts).forEach(([platform, count]) => {
                 const li = document.createElement("li");
@@ -102,14 +96,23 @@
                     <canvas id="sparkline-${platform}" width="100" height="30"></canvas>
                 `;
                 platformList.appendChild(li);
-
+    
                 if (platformActivity[platform]) {
                     const activity = platformActivity[platform];
-                    const periods = Object.keys(activity).sort();
-                    const values = periods.map(period => activity[period] || 0);
-
+    
+                    // Prepare Sparkline Data
+                    const sortedPeriods = Object.keys(activity).sort();
+                    const values = sortedPeriods.map(period => activity[period] || 0);
+    
+                    // Log Activity Data for Debugging
+                    console.log(`Platform: ${platform}`, {
+                        periods: sortedPeriods,
+                        values: values,
+                    });
+    
+                    // Draw the Sparkline
                     const canvas = document.getElementById(`sparkline-${platform}`);
-                    if (canvas) {
+                    if (canvas && values.length > 0) {
                         new Sparkline(canvas).draw(values);
                     }
                 }
@@ -119,7 +122,7 @@
             li.textContent = "No platform data available.";
             platformList.appendChild(li);
         }
-
+    
         const table = new Tabulator("#table-container", {
             data: tableData,
             layout: "fitColumns",
@@ -133,7 +136,7 @@
                 { title: "Downloaded At", field: "Downloaded At" },
             ],
         });
-
+    
         document.getElementById("download-csv").addEventListener("click", () => {
             table.download("csv", "results.csv");
         });
