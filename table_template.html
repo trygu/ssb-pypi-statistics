@@ -37,10 +37,10 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
             text-align: center;
             font-size: 1rem;
             display: inline-block;
+            text-decoration: none;
         }
 
         .action-button:hover {
@@ -65,6 +65,13 @@
 
     <div class="actions">
         <button id="download-csv" class="action-button">Download CSV</button>
+
+        <!-- DuckDB Button -->
+        <a id="duckdb-button" class="action-button"
+            href="https://shell.duckdb.org/#queries=v0, %20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
+            target="_blank">
+            Open in DuckDB
+        </a>
     </div>
 
     <div id="table-container"></div>
@@ -74,13 +81,14 @@
     <script src="https://cdn.jsdelivr.net/npm/sparklines/source/sparkline.js"></script>
 
     <script>
-        // Injected by Python
         const tableData = [];
         const totalPackages = 0;
         const platformCounts = {};
         const platformActivity = {};
 
-        // Populate Total Package Count
+        console.log("Injected Data:", { tableData, totalPackages, platformCounts, platformActivity });
+
+        // Update Total Package Count
         document.getElementById("total-packages").textContent = totalPackages;
 
         // Populate Platform Counts with Sparklines
@@ -100,7 +108,10 @@
                     const periods = Object.keys(activity).sort();
                     const values = periods.map(period => activity[period] || 0);
 
-                    new Sparkline(document.getElementById(`sparkline-${platform}`)).draw(values);
+                    const canvas = document.getElementById(`sparkline-${platform}`);
+                    if (canvas) {
+                        new Sparkline(canvas).draw(values);
+                    }
                 }
             });
         } else {
@@ -109,7 +120,6 @@
             platformList.appendChild(li);
         }
 
-        // Initialize Tabulator Table
         const table = new Tabulator("#table-container", {
             data: tableData,
             layout: "fitColumns",
@@ -124,7 +134,6 @@
             ],
         });
 
-        // CSV Download Button
         document.getElementById("download-csv").addEventListener("click", () => {
             table.download("csv", "results.csv");
         });
