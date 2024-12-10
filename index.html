@@ -12,8 +12,8 @@
     <!-- Tabulator JS -->
     <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
 
-    <!-- Sparkline JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sparkline/0.1.0/sparkline.min.js"></script>
+    <!-- Sparkline JS (Working Version) -->
+    <script src="https://cdn.jsdelivr.net/npm/@fnando/sparkline/dist/sparkline.umd.js"></script>
 
     <style>
         body {
@@ -107,7 +107,7 @@
 
                     const canvas = document.getElementById(`sparkline-${platform}`);
                     if (canvas && values.length > 0) {
-                        new Sparkline(canvas).draw(values);
+                        sparkline(canvas, values);
                     }
                 }
             });
