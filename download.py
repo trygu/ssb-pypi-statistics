@@ -28,7 +28,7 @@ def fetch_all_results(query, api_key):
 
 def save_results_to_csv(results, output_file="./src/results.csv"):
     """
-    Format the search results, sort them by 'Last Updated', and save them to a CSV file.
+    Format the search results and save them to a CSV file.
     """
     # Get the current timestamp in ISO 8601 format with timezone awareness
     current_timestamp = datetime.now(timezone.utc).isoformat()
@@ -46,22 +46,15 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
                 "Description": result.get("description"),
                 "Homepage": result.get("homepage"),
                 "Repository": repository_url,
-                "Contributors": result.get("contributors_count", 0),
+                "Contributors": result.get("contributors_count", 0),  
                 "Keywords": ", ".join(result.get("keywords", [])),
                 "Stars": result.get("stars", 0),
                 "Forks": result.get("forks", 0),
-                "Downloaded At": current_timestamp
+                "Downloaded At": current_timestamp 
             })
 
-    # Convert to DataFrame
-    df = pd.DataFrame(formatted_results)
-
-    # Convert 'Last Updated' to datetime for sorting
-    if not df.empty and "Last Updated" in df.columns:
-        df['Last Updated'] = pd.to_datetime(df['Last Updated'])
-        df = df.sort_values(by="Last Updated", ascending=False)  # Sort DESC
-
     # Save to CSV
+    df = pd.DataFrame(formatted_results)
     df.to_csv(output_file, index=False)
     print(f"\nResults saved to '{output_file}'.")
 
