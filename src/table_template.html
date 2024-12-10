@@ -18,17 +18,49 @@
 
         h1 {
             font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        #table-container {
-            margin-top: 20px;
-            font-size: 0.9rem;
+        #stats {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        ul#platform-counts {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            justify-items: center;
+        }
+
+        .platform-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .platform-item span {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .sparkline {
+            width: 100%;
+            height: 50px !important;
         }
 
         .actions {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
+            margin: 20px 0;
+            text-align: center;
         }
 
         .action-button {
@@ -39,35 +71,15 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
+            margin: 5px;
         }
 
         .action-button:hover {
             background-color: #0056b3;
         }
 
-        #stats {
-            margin-bottom: 20px;
-        }
-
-        ul#platform-counts {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .platform-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .platform-item span {
-            flex: 1;
-        }
-
-        .sparkline {
-            width: 150px !important;
-            height: 50px !important;
-            margin-left: 15px;
+        #table-container {
+            margin-top: 30px;
         }
     </style>
 </head>
@@ -127,8 +139,8 @@
                     }]
                 },
                 options: {
-                    maintainAspectRatio: false,
-                    responsive: false,
+                    maintainAspectRatio: true,
+                    responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
