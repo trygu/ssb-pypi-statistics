@@ -13,6 +13,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            line-height: 1.6;
         }
 
         h1 {
@@ -46,12 +47,27 @@
 
         #stats {
             margin-bottom: 20px;
-            font-size: 1.1rem;
+        }
+
+        ul#platform-counts {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .platform-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .platform-item span {
+            flex: 1;
         }
 
         .sparkline {
-            width: 100px !important;
-            height: 30px !important;
+            width: 150px !important;
+            height: 50px !important;
+            margin-left: 15px;
         }
     </style>
 </head>
@@ -86,16 +102,11 @@
         const platformCounts = {}; // Example: {"Maven": 54, "Pypi": 52, "NPM": 9}
         const platformActivity = {}; // Example: {"Maven": {"2020-01": 5, "2020-02": 10}, "Pypi": {"2020-01": 3}}
 
-        console.log("Injected Data:", { tableData, totalPackages, platformCounts, platformActivity });
-
-        // Update Total Package Count
         document.getElementById("total-packages").textContent = totalPackages;
 
-        // Populate Platform Counts and Sparklines
         const platformList = document.getElementById("platform-counts");
 
         function drawSparkline(canvasId, labels, data) {
-            // Check if the chart already exists, and destroy it to prevent duplication
             const existingChart = Chart.getChart(canvasId);
             if (existingChart) {
                 existingChart.destroy();
@@ -109,14 +120,15 @@
                         label: 'Activity',
                         data: data,
                         borderColor: '#007BFF',
-                        borderWidth: 1.5,
+                        borderWidth: 2,
+                        pointRadius: 3,
                         fill: false,
-                        tension: 0.3
+                        tension: 0.4
                     }]
                 },
                 options: {
                     maintainAspectRatio: false,
-                    responsive: false, // Disable responsiveness
+                    responsive: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
@@ -126,31 +138,23 @@
             });
         }
 
-        if (typeof platformCounts === "object" && Object.keys(platformCounts).length > 0) {
-            Object.entries(platformCounts).forEach(([platform, count]) => {
-                const li = document.createElement("li");
-                li.innerHTML = `
-                    <span>${platform}: ${count} packages</span>
-                    ${platformActivity[platform] ? `<canvas id="sparkline-${platform}" class="sparkline"></canvas>` : ''}
-                `;
-                platformList.appendChild(li);
-
-                if (platformActivity[platform]) {
-                    const activity = platformActivity[platform];
-                    const periods = Object.keys(activity).sort();
-                    const values = periods.map(period => activity[period] || 0);
-
-                    const canvas = document.getElementById(`sparkline-${platform}`);
-                    if (canvas) {
-                        drawSparkline(`sparkline-${platform}`, periods, values);
-                    }
-                }
-            });
-        } else {
+        Object.entries(platformCounts).forEach(([platform, count]) => {
             const li = document.createElement("li");
-            li.textContent = "No platform data available.";
+            li.className = "platform-item";
+            li.innerHTML = `
+                <span>${platform}: ${count} packages</span>
+                <canvas id="sparkline-${platform}" class="sparkline"></canvas>
+            `;
             platformList.appendChild(li);
-        }
+
+            if (platformActivity[platform]) {
+                const activity = platformActivity[platform];
+                const periods = Object.keys(activity).sort();
+                const values = periods.map(period => activity[period] || 0);
+
+                drawSparkline(`sparkline-${platform}`, periods, values);
+            }
+        });
 
         const table = new Tabulator("#table-container", {
             data: tableData,
