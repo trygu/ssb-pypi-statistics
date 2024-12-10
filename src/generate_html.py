@@ -31,10 +31,10 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
     with open(template_file, "r") as template:
         html = template.read()
 
+    html = html.replace("const platformCounts = {};", f"const platformCounts = {platform_counts_json};")
     html = html.replace("const tableData = [];", f"const tableData = {table_rows};")
     html = html.replace("const totalPackages = 0;", f"const totalPackages = {total_packages_json};")
-    html = html.replace("const platformCounts = {{}};", f"const platformCounts = {platform_counts_json};")
-
+   
     # Write the final HTML file
     with open(output_file, "w") as output:
         output.write(html)
