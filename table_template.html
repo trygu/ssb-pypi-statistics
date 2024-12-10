@@ -50,7 +50,7 @@
         }
 
         .sparkline {
-            width: 80px;
+            width: 100px;
             height: 30px;
         }
     </style>
@@ -95,6 +95,12 @@
         const platformList = document.getElementById("platform-counts");
 
         function drawSparkline(canvasId, labels, data) {
+            // Check if the chart already exists, and destroy it to prevent duplication
+            const existingChart = Chart.getChart(canvasId);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
             new Chart(document.getElementById(canvasId), {
                 type: 'line',
                 data: {
