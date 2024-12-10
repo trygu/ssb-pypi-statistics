@@ -1,41 +1,58 @@
 import pandas as pd
 import json
+from collections import defaultdict
 
 def sanitize(value):
     """Sanitize values to ensure safe JSON/JavaScript output."""
     if pd.isna(value):
-        return None  # Replace NaN with None for JSON compatibility
+        return None
     if isinstance(value, str):
-        # Escape double quotes and remove problematic newlines
         return value.replace('"', '\\"').replace("\n", " ").replace("\r", " ")
     return value
 
 def generate_html(csv_file="./src/results.csv", template_file="./src/table_template.html", output_file="./src/index.html"):
     """Generate an HTML page from the CSV data using a template."""
-    # Read the CSV into a DataFrame
     df = pd.read_csv(csv_file)
-    
-    # Sanitize the data
-    sanitized_table_data = df.applymap(sanitize).to_dict(orient="records")
 
-    # Calculate package statistics
-    total_packages = len(df)
-    platform_counts = df['Platform'].value_counts().to_dict()
+    # Ensure required columns exist
+    if df.empty or 'Platform' not in df.columns or 'Last Updated' not in df.columns:
+        print("Error: Required data not found in the CSV.")
+        platform_counts = {}
+        platform_activity = {}
+        total_packages = 0
+        sanitized_table_data = []
+    else:
+        # Sanitize and calculate statistics
+        sanitized_table_data = df.applymap(sanitize).to_dict(orient="records")
+        total_packages = len(df)
+        platform_counts = df['Platform'].value_counts().to_dict()
 
-    # Convert sanitized data to JSON strings
-    table_rows = json.dumps(sanitized_table_data)
+        # Calculate update activity
+        platform_activity = defaultdict(lambda: defaultdict(int))
+        df['Last Updated'] = pd.to_datetime(df['Last Updated'], errors='coerce')
+
+        # Group by platform and month-year
+        monthly_updates = df.groupby([df['Platform'], df['Last Updated'].dt.to_period("M")]).size()
+
+        # Reformat for JS injection
+        for (platform, period), count in monthly_updates.items():
+            platform_activity[platform][str(period)] = count
+
+    # Convert to JSON
+    table_rows = json.dumps(sanitized_table_data, ensure_ascii=False)
     total_packages_json = json.dumps(total_packages)
-    platform_counts_json = json.dumps(platform_counts)
+    platform_counts_json = json.dumps(platform_counts, ensure_ascii=False)
+    platform_activity_json = json.dumps(platform_activity, ensure_ascii=False)
 
-    # Read the HTML template
+    # Inject data into HTML
     with open(template_file, "r") as template:
         html = template.read()
 
-    html = html.replace("const platformCounts = {};", f"const platformCounts = {platform_counts_json};")
     html = html.replace("const tableData = [];", f"const tableData = {table_rows};")
     html = html.replace("const totalPackages = 0;", f"const totalPackages = {total_packages_json};")
-   
-    # Write the final HTML file
+    html = html.replace("const platformCounts = {};", f"const platformCounts = {platform_counts_json};")
+    html = html.replace("const platformActivity = {};", f"const platformActivity = {platform_activity_json};")
+
     with open(output_file, "w") as output:
         output.write(html)
 
