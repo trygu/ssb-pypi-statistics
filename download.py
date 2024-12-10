@@ -37,7 +37,6 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
     for result in results:
         repository_url = result.get("repository_url")
         
-        # Check for repository_url containing 'github.com/statisticsnorway'
         if repository_url and "github.com/statisticsnorway" in repository_url:
             formatted_results.append({
                 "Name": result.get("name"),
@@ -47,11 +46,11 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
                 "Description": result.get("description"),
                 "Homepage": result.get("homepage"),
                 "Repository": repository_url,
-                "Contributors": result.get("contributors_count", 0),  # Add contributors column
+                "Contributors": result.get("contributors_count", 0),  
                 "Keywords": ", ".join(result.get("keywords", [])),
                 "Stars": result.get("stars", 0),
                 "Forks": result.get("forks", 0),
-                "Downloaded At": current_timestamp  # Add timestamp column
+                "Downloaded At": current_timestamp 
             })
 
     # Save to CSV
