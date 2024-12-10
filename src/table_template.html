@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SSB Package Statistics: Interactive Results Viewer</title>
+
     <!-- Tabulator CSS -->
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css">
     <style>
@@ -61,31 +62,51 @@
         button.action-button:hover {
             background-color: #0056b3;
         }
+
+        #stats {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 
 <body>
     <h1>SSB Package Statistics: Interactive Results Viewer</h1>
+
+    <div id="stats">
+        <p>Total Packages: <span id="total-packages">Loading...</span></p>
+        <h2>Packages by Platform:</h2>
+        <ul id="platform-counts"></ul>
+    </div>
+
     <div class="actions">
-        <!-- CSV Download Button -->
         <button id="download-csv" class="action-button">Download CSV</button>
-        <!-- DuckDB WASM Button -->
         <a id="duckdb-button" class="action-button"
             href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
-            target="_blank">
-            Open in DuckDB
-        </a>
+            target="_blank">Open in DuckDB</a>
     </div>
-    <!-- Tabulator Table -->
+
     <div id="table-container"></div>
 
     <!-- Tabulator JS -->
     <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
     <script>
-        // Placeholder for table data (to be dynamically populated by the Python script)
-        const tableData = []; // Replace with actual data if needed
+        // Placeholder for table data and statistics
+        const tableData = [];
+        const totalPackages = 0;
+        const platformCounts = {};
 
-        // Tabulator Table Configuration
+        // Display statistics
+        document.getElementById("total-packages").textContent = totalPackages;
+
+        const platformList = document.getElementById("platform-counts");
+        for (const [platform, count] of Object.entries(platformCounts)) {
+            const li = document.createElement("li");
+            li.textContent = `${platform}: ${count}`;
+            platformList.appendChild(li);
+        }
+
+        // Initialize Tabulator Table
         const table = new Tabulator("#table-container", {
             data: tableData,
             layout: "fitColumns",  // Fit columns to the width of the container
