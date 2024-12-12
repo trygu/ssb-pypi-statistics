@@ -29,6 +29,7 @@ def fetch_all_results(query, api_key):
 def save_results_to_csv(results, output_file="./src/results.csv"):
     """
     Format the search results and save them to a CSV file.
+    Skip libraries with names starting with "ssb-libtest".
     """
     # Get the current timestamp in ISO 8601 format with timezone awareness
     current_timestamp = datetime.now(timezone.utc).isoformat()
@@ -36,8 +37,10 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
     formatted_results = []
     for result in results:
         repository_url = result.get("repository_url")
-        
-        if repository_url and "github.com/statisticsnorway" in repository_url:
+        name = result.get("name", "").lower()
+
+        # Skip unwanted libraries
+        if repository_url and "github.com/statisticsnorway" in repository_url and not name.startswith("ssb-libtest"):
             formatted_results.append({
                 "Name": result.get("name"),
                 "Platform": result.get("platform"),
@@ -50,7 +53,7 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
                 "Keywords": ", ".join(result.get("keywords", [])),
                 "Stars": result.get("stars", 0),
                 "Forks": result.get("forks", 0),
-                "Dependents Count": result.get("dependents_count",0),
+                "Dependents Count": result.get("dependents_count", 0),
                 "Downloaded At": current_timestamp 
             })
 
