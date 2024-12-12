@@ -6,7 +6,7 @@ import time
 
 # Constants
 LIBRARIES_IO_API_BASE = "https://libraries.io/api"
-RATE_LIMIT_DELAY = 2  # 1-second delay between requests to respect 60 requests/minute
+RATE_LIMIT_DELAY = 1  # 1-second delay between requests to respect 60 requests/minute
 
 def make_request(url, api_key):
     """
@@ -23,6 +23,11 @@ def make_request(url, api_key):
             print(f"Rate limit hit. Retrying after {retry_after} seconds...")
             time.sleep(retry_after)
             continue
+
+        # Handle not found (404)
+        if response.status_code == 404:
+            print(f"Page not found: {url}. Stopping pagination.")
+            return None  # Signal to stop pagination
 
         # Handle other non-200 responses
         if response.status_code != 200:
@@ -46,7 +51,11 @@ def fetch_all_results(api_key):
             url = f"{LIBRARIES_IO_API_BASE}/search?platforms={platform}&api_key={api_key}&page={page}"
             data = make_request(url, api_key)
 
-            if not data:
+            # Stop pagination if no data is returned (e.g., 404)
+            if data is None:
+                break
+
+            if not data:  # Empty response indicates no more results
                 break
 
             all_results.extend(data)
