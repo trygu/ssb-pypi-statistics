@@ -45,7 +45,7 @@ def fetch_cran_metadata(package_name):
 
         if response.status_code == 200:
             # Extract Maintainer using regex for better matching
-            match = re.search(r'^Maintainer:\s*(.+)$', response.text, re.MULTILINE)
+            match = re.search(r'^Maintainer:\s*(.+?)\s*<', response.text, re.MULTILINE)
             owner_name = match.group(1) if match else "N/A"
             return {"Owner Name": owner_name, "Homepage": homepage}
 
