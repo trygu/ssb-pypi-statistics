@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import os
+import re
 from datetime import datetime, timezone
 import time
 
@@ -15,35 +16,45 @@ RATE_LIMIT_DELAY = 1  # Delay between API requests
 
 def fetch_pypi_metadata(package_name):
     """Fetch PyPi package metadata and return latest version URL."""
-    url = f"{PYPI_API_BASE}/{package_name}/json"
-    response = requests.get(url)
+    homepage = PYPI_PACKAGE_PAGE.format(package_name)
 
-    if response.status_code == 200:
-        data = response.json()
-        return {
-            "Owner Name": data["info"].get("author", "N/A"),
-            "Homepage": PYPI_PACKAGE_PAGE.format(package_name)
-        }
-    else:
+    try:
+        url = f"{PYPI_API_BASE}/{package_name}/json"
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            owner_name = data["info"].get("author", "N/A")
+            return {"Owner Name": owner_name, "Homepage": homepage}
+
         print(f"PyPi package '{package_name}' not found.")
-        return {"Owner Name": "N/A", "Homepage": "N/A"}
+    except Exception as e:
+        print(f"Error fetching PyPi metadata for {package_name}: {e}")
+
+    # Default fallback
+    return {"Owner Name": "N/A", "Homepage": homepage}
 
 
 def fetch_cran_metadata(package_name):
     """Fetch CRAN package metadata and return latest version URL."""
-    url = CRAN_PACKAGE_URL.format(package_name)
-    response = requests.get(url)
+    homepage = CRAN_PACKAGE_PAGE.format(package_name)
 
-    if response.status_code == 200:
-        lines = response.text.splitlines()
-        data = {line.split(": ", 1)[0]: line.split(": ", 1)[1] for line in lines if ": " in line}
-        return {
-            "Owner Name": data.get("Maintainer", "N/A"),
-            "Homepage": CRAN_PACKAGE_PAGE.format(package_name),
-        }
-    else:
+    try:
+        url = CRAN_PACKAGE_URL.format(package_name)
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            # Extract Maintainer using regex for better matching
+            match = re.search(r'^Maintainer:\s*(.+)$', response.text, re.MULTILINE)
+            owner_name = match.group(1) if match else "N/A"
+            return {"Owner Name": owner_name, "Homepage": homepage}
+
         print(f"CRAN package '{package_name}' not found.")
-        return {"Owner Name": "N/A", "Homepage": "N/A"}
+    except Exception as e:
+        print(f"Error fetching CRAN metadata for {package_name}: {e}")
+
+    # Default fallback
+    return {"Owner Name": "N/A", "Homepage": homepage}
 
 
 def fetch_all_results(api_key):
