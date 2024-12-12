@@ -40,7 +40,7 @@
         }
 
         #stats {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             text-align: center;
         }
 
@@ -75,17 +75,19 @@
         .actions {
             margin: 20px 0;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
         }
 
         .action-button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background-color: #274247;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
-            margin: 5px;
             text-transform: uppercase;
             text-decoration: none;
         }
@@ -114,7 +116,7 @@
 
     <div id="stats">
         <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
-        <p id="last-updated">Sist oppdatert: <span id='last-updated-time'>N/A</span></p>
+        <p id="last-updated">Sist oppdatert: <span id="last-updated-time">N/A</span></p>
         <h2>Pakker etter Plattform:</h2>
         <ul id="platform-counts"></ul>
     </div>
