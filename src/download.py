@@ -6,6 +6,32 @@ import time
 
 # Constants
 LIBRARIES_IO_API_BASE = "https://libraries.io/api"
+RATE_LIMIT_DELAY = 2  # 1-second delay between requests to respect 60 requests/minute
+
+def make_request(url, api_key):
+    """
+    Make a request to the Libraries.io API with rate-limiting and retry logic.
+    """
+    headers = {"Authorization": f"Bearer {api_key}"}
+    while True:
+        print(f"Fetching: {url}")
+        response = requests.get(url, headers=headers)
+
+        # Handle rate limiting
+        if response.status_code == 429:
+            retry_after = int(response.headers.get("Retry-After", 60))  # Default to 60 seconds
+            print(f"Rate limit hit. Retrying after {retry_after} seconds...")
+            time.sleep(retry_after)
+            continue
+
+        # Handle other non-200 responses
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch Libraries.io results: {response.status_code}\n{response.text}")
+
+        # Respect the rate limit delay
+        time.sleep(RATE_LIMIT_DELAY)
+
+        return response.json()
 
 def fetch_all_results(api_key):
     """
@@ -18,28 +44,13 @@ def fetch_all_results(api_key):
         page = 1
         while True:
             url = f"{LIBRARIES_IO_API_BASE}/search?platforms={platform}&api_key={api_key}&page={page}"
-            print(f"Fetching: {url}")
-            response = requests.get(url)
+            data = make_request(url, api_key)
 
-            # Handle rate limiting
-            if response.status_code == 429:
-                retry_after = int(response.headers.get("Retry-After", 60))  # Default to 60 seconds
-                print(f"Rate limit hit. Retrying after {retry_after} seconds...")
-                time.sleep(retry_after)
-                continue
-
-            if response.status_code != 200:
-                raise Exception(f"Failed to fetch Libraries.io results: {response.status_code}\n{response.text}")
-
-            data = response.json()
             if not data:
                 break
 
             all_results.extend(data)
             page += 1
-
-            # Delay to stay within the 60 requests/minute limit
-            time.sleep(1)  # 1 second per request
 
     return all_results
 
@@ -48,21 +59,7 @@ def fetch_owner_metadata(platform, name, api_key):
     Fetch detailed owner metadata from Libraries.io.
     """
     url = f"{LIBRARIES_IO_API_BASE}/{platform}/{name}?api_key={api_key}"
-    print(f"Fetching owner metadata: {url}")
-    response = requests.get(url)
-
-    # Handle rate limiting for owner metadata requests
-    if response.status_code == 429:
-        retry_after = int(response.headers.get("Retry-After", 60))  # Default to 60 seconds
-        print(f"Rate limit hit for owner metadata. Retrying after {retry_after} seconds...")
-        time.sleep(retry_after)
-        return fetch_owner_metadata(platform, name, api_key)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Failed to fetch owner metadata for {name}: {response.status_code}")
-        return {}
+    return make_request(url, api_key)
 
 def save_results_to_csv(results, api_key, output_file="./src/results.csv"):
     """
@@ -101,9 +98,6 @@ def save_results_to_csv(results, api_key, output_file="./src/results.csv"):
             "Dependents Count": result.get("dependents_count", 0),
             "Downloaded At": current_timestamp
         })
-
-        # Rate-limit between owner metadata fetches
-        time.sleep(1)  # 1 second per request
 
     # Save to CSV
     df = pd.DataFrame(formatted_results)
