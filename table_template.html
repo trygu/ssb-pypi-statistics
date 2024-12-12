@@ -16,10 +16,20 @@
             line-height: 1.6;
         }
 
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            height: 60px;
+            margin-right: 20px;
+        }
+
         h1 {
             font-size: 2rem;
-            text-align: center;
-            margin-bottom: 20px;
+            text-align: left;
         }
 
         #stats {
@@ -86,7 +96,10 @@
 </head>
 
 <body>
-    <h1>SSB: Oversikt over publiserte pakker på PyPi og CRAN</h1>
+    <header>
+        <img src="https://www.ssb.no/_assets/img/ssb-logo.svg" alt="SSB-logo" class="logo">
+        <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
+    </header>
 
     <div id="stats">
         <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
