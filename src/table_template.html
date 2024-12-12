@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSB Package Statistics: Interactive Results Viewer</title>
+    <title>SSB: Oversikt over publiserte pakker på PyPi og CRAN</title>
 
     <!-- Tabulator CSS -->
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css">
@@ -86,20 +86,20 @@
 </head>
 
 <body>
-    <h1>SSB Package Statistics: Interactive Results Viewer</h1>
+    <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
 
     <div id="stats">
-        <p>Total Packages: <span id="total-packages">Loading...</span></p>
-        <h2>Packages by Platform:</h2>
+        <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
+        <h2>Pakker etter Plattform:</h2>
         <ul id="platform-counts"></ul>
     </div>
 
     <div class="actions">
-        <button id="download-csv" class="action-button">Download CSV</button>
+        <button id="download-csv" class="action-button">Last ned CSV</button>
         <a id="duckdb-button" class="action-button"
             href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
             target="_blank">
-            Open in DuckDB
+            Åpne i DuckDB
         </a>
     </div>
 
@@ -130,7 +130,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Activity',
+                        label: 'Aktivitet',
                         data: data,
                         borderColor: '#007BFF',
                         borderWidth: 2,
@@ -157,7 +157,7 @@
             const li = document.createElement("li");
             li.className = "platform-item";
             li.innerHTML = `
-                <span>${platform}: ${count} packages</span>
+                <span>${platform}: ${count} pakker</span>
                 <canvas id="sparkline-${platform}" class="sparkline"></canvas>
             `;
             platformList.appendChild(li);
@@ -178,17 +178,16 @@
                 { column: "Last Updated", dir: "desc" },
             ],
             columns: [
-                { title: "Name", field: "Name", formatter: "html" },
-                { title: "Platform", field: "Platform" },
-                { title: "Latest Version", field: "Latest Version" },
-                { title: "Last Updated", field: "Last Updated", sorter: "date" },
-                { title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
+                { title: "Navn", field: "Name", formatter: "html" },
+                { title: "Plattform", field: "Platform" },
+                { title: "Siste versjon", field: "Latest Version" },
+                { title: "Sist oppdatert", field: "Last Updated", sorter: "date" },
+                { title: "Hjemmeside", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
                 { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
-                { title: "Dependents Count", field: "Dependents Count" },
-                { title: "Contributors", field: "Contributors" },
-                { title: "Owner Name", field: "Owner Name" },
-                { title: "Owner Type", field: "Owner Type" },
-                { title: "Downloaded At", field: "Downloaded At" },
+                { title: "Antall avhengigheter", field: "Dependents Count" },
+                { title: "Bidragsytere", field: "Contributors" },
+                { title: "Eier", field: "Owner Name" },
+                { title: "Lastet ned", field: "Downloaded At" },
             ],
         });
 
