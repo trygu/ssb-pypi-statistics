@@ -12,7 +12,14 @@ def sanitize(value):
 
 def generate_html(csv_file="./src/results.csv", template_file="./src/table_template.html", output_file="./src/index.html"):
     """Generate an HTML page from the CSV data using a template."""
-    df = pd.read_csv(csv_file)
+    try:
+        df = pd.read_csv(csv_file)
+    except FileNotFoundError:
+        print(f"Error: CSV file '{csv_file}' not found.")
+        return
+    except pd.errors.EmptyDataError:
+        print(f"Error: CSV file '{csv_file}' is empty or invalid.")
+        return
 
     # Ensure required columns exist
     if df.empty or 'Platform' not in df.columns or 'Last Updated' not in df.columns:
