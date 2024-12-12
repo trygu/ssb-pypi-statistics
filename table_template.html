@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSB: Oversikt over publiserte pakker på PyPi og CRAN</title>
+    <title>Oversikt over publiserte pakker</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
@@ -72,12 +72,6 @@
             margin-bottom: 10px;
         }
 
-        .sparkline {
-            width: 200px !important;
-            height: 75px !important;
-            margin-left: 15px;
-        }
-
         .actions {
             margin: 20px 0;
             text-align: center;
@@ -115,7 +109,7 @@
 <body>
     <header>
         <img id="ssb-logo" src="https://www.ssb.no/_/asset/mimir:0000019377e98930/SSB_logo_black.svg" alt="SSB Logo">
-        <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
+        <h1>Oversikt over publiserte pakker</h1>
     </header>
 
     <div id="stats">
@@ -143,10 +137,6 @@
         const totalPackages = 0;
         const platformCounts = {};
         const platformActivity = {};
-
-        // Set last updated timestamp dynamically
-        const lastUpdatedTimestamp = new Date().toLocaleString("no-NO");
-        document.getElementById("last-updated-time").textContent = lastUpdatedTimestamp;
 
         document.getElementById("total-packages").textContent = totalPackages;
 
@@ -226,5 +216,4 @@
         });
     </script>
 </body>
-
 </html>

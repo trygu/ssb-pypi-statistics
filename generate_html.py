@@ -60,7 +60,7 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
     html = html.replace("const totalPackages = 0;", f"const totalPackages = {total_packages_json};")
     html = html.replace("const platformCounts = {};", f"const platformCounts = {platform_counts_json};")
     html = html.replace("const platformActivity = {};", f"const platformActivity = {platform_activity_json};")
-    html = html.replace("<span id='last-updated-time'>N/A</span>", f"<span id='last-updated-time'>{last_updated}</span>")
+    html = html.replace("<span id='last-updated'>N/A</span>", f"<span id='last-updated'>{last_updated}</span>")
 
     with open(output_file, "w") as output:
         output.write(html)
