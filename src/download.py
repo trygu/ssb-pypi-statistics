@@ -36,25 +36,21 @@ def fetch_pypi_metadata(package_name):
 
 
 def fetch_cran_metadata(package_name):
-    """Fetch CRAN package metadata and return clean maintainer information."""
-    homepage = CRAN_PACKAGE_PAGE.format(package_name)  # Use the correct package name
+    """Fetch CRAN package metadata and return latest version URL."""
+    homepage = CRAN_PACKAGE_PAGE.format(package_name)
 
     try:
         url = CRAN_PACKAGE_URL.format(package_name)
         response = requests.get(url)
 
         if response.status_code == 200:
-            # Parse DESCRIPTION file line by line
-            lines = response.text.splitlines()
-            maintainer = None
-            for line in lines:
-                if line.startswith("Maintainer:"):
-                    # Clean "Maintainer: <name>" line
-                    maintainer = line.replace("Maintainer:", "").strip()
-                    # Remove email address if present
-                    maintainer = re.sub(r"<.*?>", "", maintainer).strip()
-                    break
-            return {"Owner Name": maintainer or "N/A", "Homepage": homepage}
+            # Parse Maintainer
+            maintainer_line = next(
+                (line for line in response.text.splitlines() if line.startswith("Maintainer:")),
+                None,
+            )
+            owner_name = re.sub(r"<.*?>", "", maintainer_line.split(":", 1)[1].strip()) if maintainer_line else "N/A"
+            return {"Owner Name": owner_name, "Homepage": homepage}
 
         print(f"CRAN package '{package_name}' not found.")
     except Exception as e:
@@ -94,9 +90,9 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
 
     formatted_results = []
     for result in results:
-        name = result.get("name", "").lower()
+        name = result.get("name", "").strip()
         platform = result.get("platform", "").lower()
-        repository_url = result.get("repository_url", "").lower()
+        repository_url = result.get("repository_url", "").strip()
 
         # Skip unwanted packages
         if name.startswith("ssb-libtest") or "github.com/statisticsnorway" not in repository_url:
@@ -113,7 +109,7 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
 
         # Add all relevant columns
         formatted_results.append({
-            "Name": result.get("name", "N/A"),
+            "Name": name,  # Preserve case
             "Platform": result.get("platform", "N/A"),
             "Latest Version": result.get("latest_release_number", "N/A"),
             "Last Updated": result.get("latest_release_published_at", "N/A"),
@@ -130,6 +126,13 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
 
     # Create DataFrame and sort by Last Updated DESC
     df = pd.DataFrame(formatted_results)
+
+    # Fix CRAN URLs to preserve case
+    df["Homepage"] = df.apply(
+        lambda row: CRAN_PACKAGE_PAGE.format(row["Name"]) if row["Platform"].lower() == "cran" else row["Homepage"],
+        axis=1,
+    )
+
     df["Last Updated"] = pd.to_datetime(df["Last Updated"], errors="coerce")
     df.sort_values(by="Last Updated", ascending=False, inplace=True)
 
