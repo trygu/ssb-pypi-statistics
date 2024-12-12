@@ -6,45 +6,40 @@ import time
 
 # Constants
 LIBRARIES_IO_API_BASE = "https://libraries.io/api"
-GITHUB_API_BASE = "https://api.github.com/repos"
-RATE_LIMIT_DELAY = 1  # 1-second delay between requests
+PYPI_API_BASE = "https://pypi.org/pypi"
+CRAN_PACKAGE_URL = "https://cran.r-project.org/web/packages/{}/DESCRIPTION"
+RATE_LIMIT_DELAY = 1  # Delay between API requests
 
 
-def make_request(url, headers=None):
-    """
-    Make a request with rate-limiting and retry logic.
-    """
-    while True:
-        print(f"Fetching: {url}")
-        response = requests.get(url, headers=headers)
+def fetch_pypi_metadata(package_name):
+    """Fetch PyPi package metadata (only author)."""
+    url = f"{PYPI_API_BASE}/{package_name}/json"
+    response = requests.get(url)
 
-        # Handle rate limiting
-        if response.status_code == 429:
-            retry_after = int(response.headers.get("Retry-After", 60))
-            print(f"Rate limit hit. Retrying after {retry_after} seconds...")
-            time.sleep(retry_after)
-            continue
+    if response.status_code == 200:
+        data = response.json()
+        return {"Owner Name": data["info"].get("author", "N/A")}
+    else:
+        print(f"PyPi package '{package_name}' not found.")
+        return {"Owner Name": "N/A"}
 
-        # Handle 404 Not Found
-        if response.status_code == 404:
-            print(f"Page not found: {url}. Skipping.")
-            return None
 
-        # Handle other non-200 responses
-        if response.status_code != 200:
-            print(f"Error fetching data: {response.status_code}\n{response.text}")
-            raise Exception(f"Failed to fetch data: {response.status_code}")
+def fetch_cran_metadata(package_name):
+    """Fetch CRAN package metadata (only Maintainer)."""
+    url = CRAN_PACKAGE_URL.format(package_name)
+    response = requests.get(url)
 
-        # Respect the rate limit delay
-        time.sleep(RATE_LIMIT_DELAY)
-
-        return response.json()
+    if response.status_code == 200:
+        lines = response.text.splitlines()
+        data = {line.split(": ", 1)[0]: line.split(": ", 1)[1] for line in lines if ": " in line}
+        return {"Owner Name": data.get("Maintainer", "N/A")}
+    else:
+        print(f"CRAN package '{package_name}' not found.")
+        return {"Owner Name": "N/A"}
 
 
 def fetch_all_results(api_key):
-    """
-    Fetch packages from Libraries.io based on query.
-    """
+    """Fetch packages from Libraries.io for PyPi and CRAN."""
     platforms = ['pypi', 'cran']
     all_results = []
 
@@ -52,46 +47,24 @@ def fetch_all_results(api_key):
         page = 1
         while True:
             url = f"{LIBRARIES_IO_API_BASE}/search?q=statisticsnorway&platforms={platform}&api_key={api_key}&page={page}"
-            data = make_request(url)
+            response = requests.get(url)
 
-            if data is None or not data:
+            if response.status_code != 200 or not response.json():
                 break
 
-            all_results.extend(data)
+            all_results.extend(response.json())
             page += 1
+            time.sleep(RATE_LIMIT_DELAY)
 
     return all_results
 
 
-def fetch_github_metadata(repository_url, github_token):
-    """
-    Fetch repository metadata from GitHub API using the repo URL.
-    """
-    if not repository_url.startswith("https://github.com"):
-        return {}
-
-    repo_path = "/".join(repository_url.split("/")[-2:])
-    url = f"{GITHUB_API_BASE}/{repo_path}"
-    headers = {"Authorization": f"token {github_token}"} if github_token else None
-
-    return make_request(url, headers)
-
-
-def save_results_to_csv(results, api_key, github_token, output_file="./src/results.csv"):
-    """
-    Format the search results, fetch GitHub metadata, and save to CSV.
-    Ensure the output directory exists, log details, and handle errors gracefully.
-    """
+def save_results_to_csv(results, output_file="./src/results.csv"):
+    """Format results, fetch metadata, sort, and save to CSV."""
     current_timestamp = datetime.now(timezone.utc).isoformat()
 
-    # Ensure the output directory exists
     output_dir = os.path.dirname(output_file)
-    try:
-        os.makedirs(output_dir, exist_ok=True)
-        print(f"Output directory '{output_dir}' verified or created.")
-    except Exception as e:
-        print(f"Failed to create output directory '{output_dir}': {e}")
-        return
+    os.makedirs(output_dir, exist_ok=True)
 
     formatted_results = []
     for result in results:
@@ -99,16 +72,20 @@ def save_results_to_csv(results, api_key, github_token, output_file="./src/resul
         platform = result.get("platform", "").lower()
         repository_url = result.get("repository_url", "").lower()
 
-        # Filter out unwanted libraries
+        # Skip unwanted packages
         if name.startswith("ssb-libtest") or "github.com/statisticsnorway" not in repository_url:
             print(f"Skipping {name} (test library or not hosted by Statistics Norway)")
             continue
 
-        # Fetch GitHub metadata safely
-        github_metadata = fetch_github_metadata(repository_url, github_token) or {}
-        owner_info = github_metadata.get("owner", {})
+        # Fetch relevant metadata
+        if platform == "pypi":
+            metadata = fetch_pypi_metadata(name)
+        elif platform == "cran":
+            metadata = fetch_cran_metadata(name)
+        else:
+            metadata = {"Owner Name": "N/A"}
 
-        # Append cleaned data
+        # Add all relevant columns
         formatted_results.append({
             "Name": result.get("name", "N/A"),
             "Platform": result.get("platform", "N/A"),
@@ -117,40 +94,35 @@ def save_results_to_csv(results, api_key, github_token, output_file="./src/resul
             "Description": result.get("description", "N/A"),
             "Homepage": result.get("homepage", "N/A"),
             "Repository": repository_url,
+            "Owner Name": metadata.get("Owner Name", "N/A"),
             "Contributors": result.get("contributors_count", 0),
-            "Owner Name": owner_info.get("login", "N/A"),
-            "Owner Type": owner_info.get("type", "N/A"),
             "Stars": result.get("stars", 0),
             "Forks": result.get("forks", 0),
             "Dependents Count": result.get("dependents_count", 0),
-            "Downloaded At": current_timestamp
+            "Downloaded At": current_timestamp,
         })
 
-    # Save to CSV and handle errors
-    try:
-        df = pd.DataFrame(formatted_results)
-        df.to_csv(output_file, index=False)
-        print(f"\nResults successfully saved to '{os.path.abspath(output_file)}'.")
-    except Exception as e:
-        print(f"Failed to save CSV file: {e}")
+    # Create DataFrame and sort by Last Updated DESC
+    df = pd.DataFrame(formatted_results)
+    df["Last Updated"] = pd.to_datetime(df["Last Updated"], errors="coerce")
+    df.sort_values(by="Last Updated", ascending=False, inplace=True)
+
+    # Save sorted results to CSV
+    df.to_csv(output_file, index=False)
+    print(f"\nResults successfully saved to '{os.path.abspath(output_file)}'.")
 
 
 def main():
     api_key = os.getenv("LIBRARIESIO_API_KEY")
-    github_token = os.getenv("GITHUB_TOKEN")
-
     if not api_key:
         raise Exception("Libraries.io API key not found. Please set LIBRARIESIO_API_KEY in the environment.")
 
     print("Searching Libraries.io for PyPi and CRAN packages...")
-
-    # Fetch all results across all pages
     results = fetch_all_results(api_key)
-
     print(f"Fetched {len(results)} results.")
 
-    # Save results with GitHub metadata
-    save_results_to_csv(results, api_key, github_token)
+    # Save results to CSV
+    save_results_to_csv(results)
 
 
 if __name__ == "__main__":
