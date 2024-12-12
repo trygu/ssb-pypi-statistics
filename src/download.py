@@ -22,7 +22,7 @@ def fetch_pypi_metadata(package_name):
         data = response.json()
         return {
             "Owner Name": data["info"].get("author", "N/A"),
-            "Homepage": f"{PYPI_PACKAGE_PAGE}/{package_name}"
+            "Homepage": PYPI_PACKAGE_PAGE.format(package_name)
         }
     else:
         print(f"PyPi package '{package_name}' not found.")
