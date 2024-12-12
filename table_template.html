@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSB: Oversikt over publiserte pakker på PyPi og CRAN</title>
+    <title>Oversikt over publiserte pakker på PyPi og CRAN</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
@@ -48,8 +48,8 @@
             list-style-type: none;
             padding: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
             justify-items: center;
         }
 
@@ -59,23 +59,29 @@
             align-items: center;
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 300px;
+            max-width: 400px;
             background-color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .platform-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .platform-item span {
             font-weight: 600;
             color: #274247;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
         }
 
         .sparkline {
-            width: 200px !important;
-            height: 75px !important;
-            margin-left: 15px;
+            width: 300px !important;
+            height: 100px !important;
         }
 
         .actions {
@@ -84,23 +90,37 @@
         }
 
         .action-button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             background-color: #274247;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin: 5px;
             text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease, transform 0.2s ease;
         }
 
         .action-button:hover {
             background-color: #1b3035;
+            transform: translateY(-3px);
         }
 
         #table-container {
             margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            ul#platform-counts {
+                grid-template-columns: 1fr;
+            }
+
+            .sparkline {
+                width: 200px !important;
+                height: 75px !important;
+            }
         }
     </style>
 </head>
@@ -108,7 +128,7 @@
 <body>
     <header>
         <img id="ssb-logo" src="https://www.ssb.no/_/asset/mimir:0000019377e98930/SSB_logo_black.svg" alt="SSB Logo">
-        <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
+        <h1>Oversikt over publiserte pakker på PyPi og CRAN</h1>
     </header>
 
     <div id="stats">
