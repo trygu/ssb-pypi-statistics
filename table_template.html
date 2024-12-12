@@ -7,7 +7,8 @@
     <title>Oversikt over publiserte pakker på PyPi og CRAN</title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap"
+        rel="stylesheet">
 
     <!-- Tabulator CSS -->
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css">
@@ -47,10 +48,10 @@
         ul#platform-counts {
             list-style-type: none;
             padding: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-            justify-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
         }
 
         .platform-item {
@@ -58,29 +59,22 @@
             flex-direction: column;
             align-items: center;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
+            width: 300px;
             background-color: white;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .platform-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .platform-item span {
             font-weight: 600;
             color: #274247;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-size: 1.2rem;
         }
 
         .sparkline {
-            width: 300px !important;
+            width: 250px !important;
             height: 100px !important;
         }
 
@@ -96,33 +90,20 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1.1rem;
-            margin: 5px;
+            font-size: 1rem;
+            margin: 10px;
             text-transform: uppercase;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.2s ease, transform 0.2s ease;
         }
 
         .action-button:hover {
             background-color: #1b3035;
-            transform: translateY(-3px);
         }
 
         #table-container {
             margin-top: 30px;
         }
-
-        @media (max-width: 768px) {
-            ul#platform-counts {
-                grid-template-columns: 1fr;
-            }
-
-            .sparkline {
-                width: 200px !important;
-                height: 75px !important;
-            }
-        }
     </style>
+
 </head>
 
 <body>
