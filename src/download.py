@@ -36,18 +36,25 @@ def fetch_pypi_metadata(package_name):
 
 
 def fetch_cran_metadata(package_name):
-    """Fetch CRAN package metadata and return latest version URL."""
-    homepage = CRAN_PACKAGE_PAGE.format(package_name)
+    """Fetch CRAN package metadata and return clean maintainer information."""
+    homepage = CRAN_PACKAGE_PAGE.format(package_name)  # Use the correct package name
 
     try:
         url = CRAN_PACKAGE_URL.format(package_name)
         response = requests.get(url)
 
         if response.status_code == 200:
-            # Extract Maintainer using regex for better matching
-            match = re.search(r'^Maintainer:\s*(.+?)\s*<', response.text, re.MULTILINE)
-            owner_name = match.group(1) if match else "N/A"
-            return {"Owner Name": owner_name, "Homepage": homepage}
+            # Parse DESCRIPTION file line by line
+            lines = response.text.splitlines()
+            maintainer = None
+            for line in lines:
+                if line.startswith("Maintainer:"):
+                    # Clean "Maintainer: <name>" line
+                    maintainer = line.replace("Maintainer:", "").strip()
+                    # Remove email address if present
+                    maintainer = re.sub(r"<.*?>", "", maintainer).strip()
+                    break
+            return {"Owner Name": maintainer or "N/A", "Homepage": homepage}
 
         print(f"CRAN package '{package_name}' not found.")
     except Exception as e:
