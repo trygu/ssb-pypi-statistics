@@ -20,12 +20,20 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
         platform_counts = {}
         platform_activity = {}
         total_packages = 0
+        last_updated = "N/A"
         sanitized_table_data = []
     else:
         # Sanitize and calculate statistics
         sanitized_table_data = df.applymap(sanitize).to_dict(orient="records")
         total_packages = len(df)
         platform_counts = df['Platform'].value_counts().to_dict()
+
+        # Extract the most recent "Downloaded At" timestamp
+        if 'Downloaded At' in df.columns:
+            last_updated = pd.to_datetime(df['Downloaded At'], errors='coerce').max()
+            last_updated = last_updated.strftime("%Y-%m-%d %H:%M:%S") if pd.notna(last_updated) else "N/A"
+        else:
+            last_updated = "N/A"
 
         # Calculate update activity
         platform_activity = defaultdict(lambda: defaultdict(int))
@@ -52,6 +60,7 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
     html = html.replace("const totalPackages = 0;", f"const totalPackages = {total_packages_json};")
     html = html.replace("const platformCounts = {};", f"const platformCounts = {platform_counts_json};")
     html = html.replace("const platformActivity = {};", f"const platformActivity = {platform_activity_json};")
+    html = html.replace("<span id='last-updated-time'>N/A</span>", f"<span id='last-updated-time'>{last_updated}</span>")
 
     with open(output_file, "w") as output:
         output.write(html)
