@@ -2,13 +2,14 @@ import requests
 import pandas as pd
 import os
 from datetime import datetime, timezone
+import time
 
 # Constants
 LIBRARIES_IO_API_BASE = "https://libraries.io/api"
 
 def fetch_all_results(api_key):
     """
-    Fetch all results for PyPi and CRAN packages from Libraries.io.
+    Fetch all results for PyPi and CRAN packages from Libraries.io with rate limiting (60 requests per minute).
     """
     platforms = ['pypi', 'cran']
     all_results = []
@@ -19,6 +20,14 @@ def fetch_all_results(api_key):
             url = f"{LIBRARIES_IO_API_BASE}/search?platforms={platform}&api_key={api_key}&page={page}"
             print(f"Fetching: {url}")
             response = requests.get(url)
+
+            # Handle rate limiting
+            if response.status_code == 429:
+                retry_after = int(response.headers.get("Retry-After", 60))  # Default to 60 seconds
+                print(f"Rate limit hit. Retrying after {retry_after} seconds...")
+                time.sleep(retry_after)
+                continue
+
             if response.status_code != 200:
                 raise Exception(f"Failed to fetch Libraries.io results: {response.status_code}\n{response.text}")
 
@@ -29,6 +38,9 @@ def fetch_all_results(api_key):
             all_results.extend(data)
             page += 1
 
+            # Delay to stay within the 60 requests/minute limit
+            time.sleep(1)  # 1 second per request
+
     return all_results
 
 def fetch_owner_metadata(platform, name, api_key):
@@ -38,6 +50,14 @@ def fetch_owner_metadata(platform, name, api_key):
     url = f"{LIBRARIES_IO_API_BASE}/{platform}/{name}?api_key={api_key}"
     print(f"Fetching owner metadata: {url}")
     response = requests.get(url)
+
+    # Handle rate limiting for owner metadata requests
+    if response.status_code == 429:
+        retry_after = int(response.headers.get("Retry-After", 60))  # Default to 60 seconds
+        print(f"Rate limit hit for owner metadata. Retrying after {retry_after} seconds...")
+        time.sleep(retry_after)
+        return fetch_owner_metadata(platform, name, api_key)
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -58,7 +78,7 @@ def save_results_to_csv(results, api_key, output_file="./src/results.csv"):
         repository_url = result.get("repository_url", "").lower()
 
         # Filter out unwanted libraries
-        if name.startswith("ssb-libtest") or name.startswith("libtest") or "github.com/statisticsnorway" not in repository_url:
+        if name.startswith("ssb-libtest") or "github.com/statisticsnorway" not in repository_url:
             continue
 
         # Fetch owner metadata
@@ -81,6 +101,9 @@ def save_results_to_csv(results, api_key, output_file="./src/results.csv"):
             "Dependents Count": result.get("dependents_count", 0),
             "Downloaded At": current_timestamp
         })
+
+        # Rate-limit between owner metadata fetches
+        time.sleep(1)  # 1 second per request
 
     # Save to CSV
     df = pd.DataFrame(formatted_results)
