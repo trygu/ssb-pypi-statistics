@@ -6,30 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SSB: Oversikt over publiserte pakker på PyPi og CRAN</title>
 
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
+
     <!-- Tabulator CSS -->
     <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css">
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Open Sans", sans-serif;
             margin: 20px;
             line-height: 1.6;
-        }
-
-        header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            height: 60px;
-            margin-right: 20px;
+            background-color: #f9f9f9;
         }
 
         h1 {
+            font-family: "Roboto", sans-serif;
             font-size: 2rem;
-            text-align: left;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #274247;
         }
 
         #stats {
@@ -56,10 +52,12 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 300px;
+            background-color: white;
         }
 
         .platform-item span {
-            font-weight: bold;
+            font-weight: 600;
+            color: #274247;
             margin-bottom: 10px;
         }
 
@@ -76,17 +74,18 @@
 
         .action-button {
             padding: 10px 20px;
-            background-color: #007BFF;
+            background-color: #274247;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
             margin: 5px;
+            text-transform: uppercase;
         }
 
         .action-button:hover {
-            background-color: #0056b3;
+            background-color: #1b3035;
         }
 
         #table-container {
@@ -96,10 +95,7 @@
 </head>
 
 <body>
-    <header>
-        <img src="https://www.ssb.no/_/asset/mimir:0000019377e98930/SSB_logo_black.svg" alt="SSB-logo" class="logo">
-        <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
-    </header>
+    <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
 
     <div id="stats">
         <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
@@ -145,7 +141,7 @@
                     datasets: [{
                         label: 'Aktivitet',
                         data: data,
-                        borderColor: '#007BFF',
+                        borderColor: '#274247',
                         borderWidth: 2,
                         pointRadius: 2,
                         pointHoverRadius: 4,
