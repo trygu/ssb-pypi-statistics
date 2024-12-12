@@ -31,7 +31,8 @@ def make_request(url, api_key):
 
         # Handle other non-200 responses
         if response.status_code != 200:
-            raise Exception(f"Failed to fetch Libraries.io results: {response.status_code}\n{response.text}")
+            print(f"Error fetching data: {response.status_code}\n{response.text}")
+            raise Exception(f"Failed to fetch Libraries.io results: {response.status_code}")
 
         # Respect the rate limit delay
         time.sleep(RATE_LIMIT_DELAY)
@@ -49,17 +50,22 @@ def fetch_all_results(api_key):
         page = 1
         while True:
             url = f"{LIBRARIES_IO_API_BASE}/search?platforms={platform}&api_key={api_key}&page={page}"
-            data = make_request(url, api_key)
+            try:
+                data = make_request(url, api_key)
 
-            # Stop pagination if no data is returned (e.g., 404)
-            if data is None:
-                break
+                # Stop pagination if no data is returned (e.g., 404)
+                if data is None:
+                    break
 
-            if not data:  # Empty response indicates no more results
-                break
+                if not data:  # Empty response indicates no more results
+                    break
 
-            all_results.extend(data)
-            page += 1
+                all_results.extend(data)
+                page += 1
+
+            except Exception as e:
+                print(f"Error during pagination: {e}")
+                break  # Exit pagination gracefully on error
 
     return all_results
 
