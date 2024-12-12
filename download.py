@@ -44,9 +44,13 @@ def fetch_cran_metadata(package_name):
         response = requests.get(url)
 
         if response.status_code == 200:
-            # Extract Maintainer using regex for better matching
-            match = re.search(r'^Maintainer:\s*(.+)$', response.text, re.MULTILINE)
-            owner_name = match.group(1) if match else "N/A"
+            # Decode as UTF-8 to handle special characters like Ø
+            description_text = response.text
+
+            # Extract Maintainer using improved regex
+            match = re.search(r'^Maintainer:\s*(.+?)$', description_text, re.MULTILINE | re.IGNORECASE)
+            owner_name = match.group(1).strip() if match else "N/A"
+
             return {"Owner Name": owner_name, "Homepage": homepage}
 
         print(f"CRAN package '{package_name}' not found.")
@@ -87,19 +91,19 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
 
     formatted_results = []
     for result in results:
-        name = result.get("name", "").lower()
-        platform = result.get("platform", "").lower()
-        repository_url = result.get("repository_url", "").lower()
+        name = result.get("name", "")
+        platform = result.get("platform", "")
+        repository_url = result.get("repository_url", "")
 
         # Skip unwanted packages
-        if name.startswith("ssb-libtest") or "github.com/statisticsnorway" not in repository_url:
+        if name.lower().startswith("ssb-libtest") or "github.com/statisticsnorway" not in repository_url.lower():
             print(f"Skipping {name} (test library or not hosted by Statistics Norway)")
             continue
 
         # Fetch relevant metadata
-        if platform == "pypi":
+        if platform.lower() == "pypi":
             metadata = fetch_pypi_metadata(name)
-        elif platform == "cran":
+        elif platform.lower() == "cran":
             metadata = fetch_cran_metadata(name)
         else:
             metadata = {"Owner Name": "N/A", "Homepage": "N/A"}
