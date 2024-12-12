@@ -112,8 +112,8 @@
     <script>
         const tableData = [];
         const totalPackages = 0;
-        const platformCounts = {}; // Example: {"Maven": 54, "Pypi": 52, "NPM": 9}
-        const platformActivity = {}; // Example: {"Maven": {"2020-01": 5, "2020-02": 10}, "Pypi": {"2020-01": 3}}
+        const platformCounts = {};
+        const platformActivity = {};
 
         document.getElementById("total-packages").textContent = totalPackages;
 
@@ -181,10 +181,13 @@
                 { title: "Name", field: "Name", formatter: "html" },
                 { title: "Platform", field: "Platform" },
                 { title: "Latest Version", field: "Latest Version" },
-                { title: "Last Updated", field: "Last Updated" },
+                { title: "Last Updated", field: "Last Updated", sorter: "date" },
                 { title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
                 { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
                 { title: "Dependents Count", field: "Dependents Count" },
+                { title: "Contributors", field: "Contributors" },
+                { title: "Owner Name", field: "Owner Name" },
+                { title: "Owner Type", field: "Owner Type" },
                 { title: "Downloaded At", field: "Downloaded At" },
             ],
         });
