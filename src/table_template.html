@@ -20,12 +20,23 @@
             background-color: #f9f9f9;
         }
 
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        #ssb-logo {
+            height: 60px;
+        }
+
         h1 {
             font-family: "Roboto", sans-serif;
             font-size: 2rem;
             text-align: center;
-            margin-bottom: 20px;
             color: #274247;
+            margin: 0;
         }
 
         #stats {
@@ -95,7 +106,10 @@
 </head>
 
 <body>
-    <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
+    <header>
+        <img id="ssb-logo" src="https://www.ssb.no/_/asset/mimir:0000019377e98930/SSB_logo_black.svg" alt="SSB Logo">
+        <h1>SSB Pakke Statistikk: Interaktiv Visning</h1>
+    </header>
 
     <div id="stats">
         <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
@@ -107,9 +121,7 @@
         <button id="download-csv" class="action-button">Last ned CSV</button>
         <a id="duckdb-button" class="action-button"
             href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
-            target="_blank">
-            Åpne i DuckDB
-        </a>
+            target="_blank">Åpne i DuckDB</a>
     </div>
 
     <div id="table-container"></div>
@@ -193,8 +205,6 @@
                 { title: "Sist oppdatert", field: "Last Updated", sorter: "date" },
                 { title: "Hjemmeside", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
                 { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
-                { title: "Antall avhengigheter", field: "Dependents Count" },
-                { title: "Bidragsytere", field: "Contributors" },
                 { title: "Eier", field: "Owner Name" },
                 { title: "Lastet ned", field: "Downloaded At" },
             ],
