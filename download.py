@@ -120,6 +120,7 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             "Contributors": result.get("contributors_count", 0),
             "Stars": result.get("stars", 0),
             "Forks": result.get("forks", 0),
+            "Number of releases": len(result.get("versions")),
             "Dependents Count": result.get("dependents_count", 0),
             "Downloaded At": current_timestamp,
         })
