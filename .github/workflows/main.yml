@@ -1,6 +1,8 @@
 name: Generate and Deploy Results
 
 on:
+  schedule:
+    - cron: "0 0 * * 0"  # Every Sunday at midnight UTC
   push:
     branches:
       - main  # Run the workflow on pushes to the main branch

@@ -1,130 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SSB Package Statistics: Interactive Results Viewer</title>
+<html lang="no">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oversikt over publiserte pakker</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
+
     <!-- Tabulator CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css">
+
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
+        body {
+            font-family: "Open Sans", sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
 
-      h1 {
-        font-size: 2rem; /* Adjust heading font size */
-      }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-      #table-container {
-        margin-top: 20px;
-        font-size: 0.9rem; /* Adjust table font size */
-      }
+        #ssb-logo {
+            height: 60px;
+        }
 
-      .actions {
-        margin-bottom: 20px;
-        display: flex;
-        gap: 10px; /* Spacing between buttons */
-      }
+        h1 {
+            font-family: "Roboto", sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            color: #274247;
+            margin: 0;
+        }
 
-      .action-button {
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        text-decoration: none; /* Ensure the text inside links isn't underlined */
-        text-align: center; /* Center the text */
-        font-size: 1rem; /* Adjust button font size */
-        display: inline-block; /* Ensure consistency for anchor buttons */
-      }
+        #stats {
+            margin-bottom: 30px;
+            text-align: center;
+        }
 
-      .action-button:hover {
-        background-color: #0056b3;
-      }
+        ul#platform-counts {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
 
-      button.action-button {
-        all: unset; /* Reset default browser styles for buttons */
-        display: inline-block; /* Ensure consistency with anchor buttons */
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        text-align: center;
-        font-size: 1rem;
-      }
+        .platform-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-      button.action-button:hover {
-        background-color: #0056b3;
-      }
+        .platform-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .platform-item span {
+            font-weight: 600;
+            color: #274247;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .sparkline {
+            width: 250px !important;
+            height: 100px !important;
+            margin-top: 10px;
+        }
+
+        .actions {
+            margin: 30px 0 20px;
+            text-align: center;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            background-color: #274247;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .action-button:hover {
+            background-color: #1b3035;
+        }
+
+        #table-container {
+            margin-top: 30px;
+        }
+
+        #last-updated {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
     </style>
-  </head>
+</head>
 
-  <body>
-    <h1>SSB Package Statistics: Interactive Results Viewer</h1>
-    <div class="actions">
-      <!-- CSV Download Button -->
-      <button id="download-csv" class="action-button">Download CSV</button>
-      <!-- DuckDB WASM Button -->
-      <a
-        id="duckdb-button"
-        class="action-button"
-        href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
-        target="_blank"
-      >
-        Open in DuckDB
-      </a>
+<body>
+    <header>
+        <img id="ssb-logo" src="https://www.ssb.no/_/asset/mimir:0000019377e98930/SSB_logo_black.svg" alt="SSB Logo">
+        <h1>Oversikt over publiserte pakker</h1>
+    </header>
+
+    <div id="stats">
+        <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
+        <p>Sist oppdatert: <span id='last-updated'>N/A</span></p>
+        <h2>Pakker etter Plattform:</h2>
+        <ul id="platform-counts"></ul>
     </div>
-    <!-- Tabulator Table -->
+
+    <div class="actions">
+        <button id="download-csv" class="action-button">Last ned CSV</button>
+        <a id="duckdb-button" class="action-button"
+            href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Sample-10-rows-from-the-table%0AFROM-ssb_packages-USING-SAMPLE-10~"
+            target="_blank">Åpne i DuckDB</a>
+    </div>
+
     <div id="table-container"></div>
 
-    <!-- Tabulator JS -->
+    <!-- Tabulator and Chart.js -->
     <script src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-      // Placeholder for table data (to be dynamically populated by the Python script)
-      const tableData = []; // Replace with actual data if needed
+        const tableData = [];
+        const totalPackages = 0;
+        const platformCounts = {};
+        const platformActivity = {};
 
-      // Tabulator Table Configuration
-      const table = new Tabulator("#table-container", {
-        data: tableData,
-        layout: "fitColumns", // Fit columns to the width of the container
-        columns: [
-          {
-            title: "Name",
-            field: "Name",
-            formatter: "html",
-            formatterParams: { target: "_blank" }
-          },
-          { title: "Platform", field: "Platform" },
-          { title: "Latest Version", field: "Latest Version" },
-          { title: "Last Updated", field: "Last Updated" },
-          { title: "Number of releases", field: "Number of releases" },
-          {
-            title: "Homepage",
-            field: "Homepage",
-            formatter: "link",
-            formatterParams: { target: "_blank" }
-          },
-          {
-            title: "Repository",
-            field: "Repository",
-            formatter: "link",
-            formatterParams: { target: "_blank" }
-          },
-          { title: "Downloaded At", field: "Downloaded At" }
-        ]
-      });
+        document.getElementById("total-packages").textContent = totalPackages;
 
-      // CSV Download Button
-      document.getElementById("download-csv").addEventListener("click", () => {
-        table.download("csv", "results.csv");
-      });
+        const platformList = document.getElementById("platform-counts");
+
+        function drawSparkline(canvasId, labels, data) {
+            const existingChart = Chart.getChart(canvasId);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            new Chart(document.getElementById(canvasId), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Aktivitet',
+                        data: data,
+                        borderColor: '#274247',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        pointHoverRadius: 4,
+                        pointBackgroundColor: '#FF5733',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: true,
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        Object.entries(platformCounts).forEach(([platform, count]) => {
+            const li = document.createElement("li");
+            li.className = "platform-item";
+            li.innerHTML = `
+                <span>${platform}: ${count} pakker</span>
+                <canvas id="sparkline-${platform}" class="sparkline"></canvas>
+            `;
+            platformList.appendChild(li);
+
+            if (platformActivity[platform]) {
+                const activity = platformActivity[platform];
+                const periods = Object.keys(activity).sort();
+                const values = periods.map(period => activity[period] || 0);
+
+                drawSparkline(`sparkline-${platform}`, periods, values);
+            }
+        });
+
+        const table = new Tabulator("#table-container", {
+            data: tableData,
+            layout: "fitColumns",
+            initialSort: [
+                { column: "Last Updated", dir: "desc" },
+            ],
+            columns: [
+                { title: "Navn", field: "Name", formatter: "html" },
+                { title: "Plattform", field: "Platform" },
+                { title: "Siste versjon", field: "Latest Version" },
+                { title: "Antall publiseringer", field: "Number of releases" },
+                { title: "Sist oppdatert", field: "Last Updated", sorter: "date" },
+                { title: "Hjemmeside", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
+                { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
+                { title: "Eier", field: "Owner Name" },
+            ],
+        });
+
+        document.getElementById("download-csv").addEventListener("click", () => {
+            table.download("csv", "results.csv");
+        });
     </script>
-  </body>
+</body>
 </html>
