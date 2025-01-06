@@ -28,14 +28,14 @@ def fetch_pypi_metadata(package_name):
         if response.status_code == 200:
             data = response.json()
             owner_name = data["info"].get("author", "N/A")
-            return {"Owner Name": owner_name, "Homepage": homepage, "Internal": False}
+            return {"Owner Name": owner_name, "Homepage": homepage}
 
         print(f"PyPi package '{package_name}' not found.")
     except Exception as e:
         print(f"Error fetching PyPi metadata for {package_name}: {e}")
 
     # Default fallback
-    return {"Owner Name": "N/A", "Homepage": homepage, "Internal": False}
+    return {"Owner Name": "N/A", "Homepage": homepage}
 
 def fetch_cran_metadata(package_name):
     """Fetch CRAN package metadata and return latest version URL."""
@@ -52,14 +52,14 @@ def fetch_cran_metadata(package_name):
                 None,
             )
             owner_name = re.sub(r"<.*?>", "", maintainer_line.split(":", 1)[1].strip()) if maintainer_line else "N/A"
-            return {"Owner Name": owner_name, "Homepage": homepage, "Internal": False}
+            return {"Owner Name": owner_name, "Homepage": homepage}
 
         print(f"CRAN package '{package_name}' not found.")
     except Exception as e:
         print(f"Error fetching CRAN metadata for {package_name}: {e}")
 
     # Default fallback
-    return {"Owner Name": "N/A", "Homepage": homepage, "Internal": False}
+    return {"Owner Name": "N/A", "Homepage": homepage}
 
 def fetch_search_results(api_key, search_term, platforms):
     """Fetch packages for a specific search term from Libraries.io for specified platforms."""
@@ -110,6 +110,14 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             print(f"Skipping test library: {name}")
             continue
 
+        # Fetch relevant metadata
+        if platform == "pypi":
+            metadata = fetch_pypi_metadata(name)
+        elif platform == "cran":
+            metadata = fetch_cran_metadata(name)
+        else:
+            metadata = {"Owner Name": "N/A", "Homepage": "N/A"}
+
         # Determine internal status based on repository URL
         if repository_url:
             if "github.com/statisticsnorway" not in repository_url:
@@ -126,9 +134,9 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             "Latest Version": result.get("latest_release_number", "N/A"),
             "Last Updated": result.get("latest_release_published_at", "N/A"),
             "Description": result.get("description", "N/A"),
-            "Homepage": result.get("homepage", "N/A"),
+            "Homepage": metadata.get("Homepage", "N/A"),
             "Repository": repository_url,
-            "Owner Name": result.get("owner", "N/A"),
+            "Owner Name": metadata.get("Owner Name", "N/A"),
             "Internal": internal,
             "Contributors": result.get("contributors_count", 0),
             "Stars": result.get("stars", 0),
