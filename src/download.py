@@ -12,7 +12,10 @@ CRAN_PACKAGE_URL = "https://cran.r-project.org/web/packages/{}/DESCRIPTION"
 CRAN_PACKAGE_PAGE = "https://cran.r-project.org/web/packages/{}"
 PYPI_PACKAGE_PAGE = "https://pypi.org/project/{}"
 RATE_LIMIT_DELAY = 1  # Delay between API requests
+LIBRARIESIO_API_KEY = os.getenv("LIBRARIESIO_API_KEY")  # Move API key to a global variable
 
+if not LIBRARIESIO_API_KEY:
+    raise Exception("Libraries.io API key not found. Please set LIBRARIESIO_API_KEY in the environment.")
 
 def fetch_pypi_metadata(package_name):
     """Fetch PyPi package metadata and return latest version URL."""
@@ -25,15 +28,17 @@ def fetch_pypi_metadata(package_name):
         if response.status_code == 200:
             data = response.json()
             owner_name = data["info"].get("author", "N/A")
-            return {"Owner Name": owner_name, "Homepage": homepage}
+            owner_email = data["info"].get("author_email", "")
+            if "@ssb.no" in owner_email:
+                return {"Owner Name": owner_name, "Homepage": homepage, "Internal": True}
+            return {"Owner Name": owner_name, "Homepage": homepage, "Internal": False}
 
         print(f"PyPi package '{package_name}' not found.")
     except Exception as e:
         print(f"Error fetching PyPi metadata for {package_name}: {e}")
 
     # Default fallback
-    return {"Owner Name": "N/A", "Homepage": homepage}
-
+    return {"Owner Name": "N/A", "Homepage": homepage, "Internal": False}
 
 def fetch_cran_metadata(package_name):
     """Fetch CRAN package metadata and return latest version URL."""
@@ -50,25 +55,27 @@ def fetch_cran_metadata(package_name):
                 None,
             )
             owner_name = re.sub(r"<.*?>", "", maintainer_line.split(":", 1)[1].strip()) if maintainer_line else "N/A"
-            return {"Owner Name": owner_name, "Homepage": homepage}
+            owner_email_match = re.search(r"<(.+?)>", maintainer_line) if maintainer_line else None
+            owner_email = owner_email_match.group(1) if owner_email_match else ""
+            if "@ssb.no" in owner_email:
+                return {"Owner Name": owner_name, "Homepage": homepage, "Internal": True}
+            return {"Owner Name": owner_name, "Homepage": homepage, "Internal": False}
 
         print(f"CRAN package '{package_name}' not found.")
     except Exception as e:
         print(f"Error fetching CRAN metadata for {package_name}: {e}")
 
     # Default fallback
-    return {"Owner Name": "N/A", "Homepage": homepage}
+    return {"Owner Name": "N/A", "Homepage": homepage, "Internal": False}
 
-
-def fetch_all_results(api_key):
-    """Fetch packages from Libraries.io for PyPi and CRAN."""
-    platforms = ['pypi', 'cran']
+def fetch_search_results(api_key, search_term, platforms):
+    """Fetch packages for a specific search term from Libraries.io for specified platforms."""
     all_results = []
 
     for platform in platforms:
         page = 1
         while True:
-            url = f"{LIBRARIES_IO_API_BASE}/search?q=statisticsnorway&platforms={platform}&api_key={api_key}&page={page}"
+            url = f"{LIBRARIES_IO_API_BASE}/search?q={search_term}&platforms={platform}&api_key={api_key}&page={page}"
             response = requests.get(url)
 
             if response.status_code != 200 or not response.json():
@@ -80,9 +87,20 @@ def fetch_all_results(api_key):
 
     return all_results
 
+def fetch_all_results(search_terms):
+    """Aggregate results from multiple searches."""
+    platforms = ['pypi', 'cran']
+    aggregated_results = []
+
+    for term in search_terms:
+        print(f"Fetching results for search term: '{term}'")
+        results = fetch_search_results(LIBRARIESIO_API_KEY, term, platforms)
+        aggregated_results.extend(results)
+
+    return aggregated_results
 
 def save_results_to_csv(results, output_file="./src/results.csv"):
-    """Format results, fetch metadata, sort, and save to CSV."""
+    """Format results, fetch metadata, deduplicate, sort, and save to CSV."""
     current_timestamp = datetime.now(timezone.utc).isoformat()
 
     output_dir = os.path.dirname(output_file)
@@ -94,18 +112,18 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
         platform = result.get("platform", "").lower()
         repository_url = result.get("repository_url", "").strip()
 
-        # Skip unwanted packages
-        if name.startswith("ssb-libtest") or "github.com/statisticsnorway" not in repository_url:
-            print(f"Skipping {name} (test library or not hosted by Statistics Norway)")
-            continue
-
         # Fetch relevant metadata
         if platform == "pypi":
             metadata = fetch_pypi_metadata(name)
         elif platform == "cran":
             metadata = fetch_cran_metadata(name)
         else:
-            metadata = {"Owner Name": "N/A", "Homepage": "N/A"}
+            metadata = {"Owner Name": "N/A", "Homepage": "N/A", "Internal": False}
+
+        # Skip if not internal
+        if not metadata.get("Internal", False):
+            print(f"Skipping {name} (no maintainer or owner with '@ssb.no' email)")
+            continue
 
         # Add all relevant columns
         formatted_results.append({
@@ -117,16 +135,20 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             "Homepage": metadata.get("Homepage", "N/A"),
             "Repository": repository_url,
             "Owner Name": metadata.get("Owner Name", "N/A"),
+            "Internal": metadata.get("Internal", False),
             "Contributors": result.get("contributors_count", 0),
             "Stars": result.get("stars", 0),
             "Forks": result.get("forks", 0),
-            "Number of releases": len(result.get("versions")),
+            "Number of releases": len(result.get("versions", [])),
             "Dependents Count": result.get("dependents_count", 0),
             "Downloaded At": current_timestamp,
         })
 
+    # Deduplicate by 'Name'
+    deduplicated_results = {result['Name']: result for result in formatted_results}.values()
+
     # Create DataFrame and sort by Last Updated DESC
-    df = pd.DataFrame(formatted_results)
+    df = pd.DataFrame(deduplicated_results)
 
     # Fix CRAN URLs to preserve case
     df["Homepage"] = df.apply(
@@ -141,19 +163,13 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
     df.to_csv(output_file, index=False)
     print(f"\nResults successfully saved to '{os.path.abspath(output_file)}'.")
 
-
 def main():
-    api_key = os.getenv("LIBRARIESIO_API_KEY")
-    if not api_key:
-        raise Exception("Libraries.io API key not found. Please set LIBRARIESIO_API_KEY in the environment.")
-
-    print("Searching Libraries.io for PyPi and CRAN packages...")
-    results = fetch_all_results(api_key)
-    print(f"Fetched {len(results)} results.")
+    search_terms = ["statisticsnorway", "dapla"]
+    results = fetch_all_results(search_terms)
+    print(f"Fetched {len(results)} results before processing.")
 
     # Save results to CSV
     save_results_to_csv(results)
-
 
 if __name__ == "__main__":
     main()
