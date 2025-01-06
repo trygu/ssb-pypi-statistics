@@ -17,12 +17,17 @@ LIBRARIESIO_API_KEY = os.getenv("LIBRARIESIO_API_KEY")  # Move API key to a glob
 if not LIBRARIESIO_API_KEY:
     raise Exception("Libraries.io API key not found. Please set LIBRARIESIO_API_KEY in the environment.")
 
+def normalize_package_name(package_name):
+    """Normalize package name for PyPI query."""
+    return package_name.lower().replace("_", "-")
+
 def fetch_pypi_metadata(package_name):
     """Fetch PyPi package metadata and return latest version URL."""
-    homepage = PYPI_PACKAGE_PAGE.format(package_name)
+    normalized_name = normalize_package_name(package_name)
+    homepage = PYPI_PACKAGE_PAGE.format(normalized_name)
 
     try:
-        url = f"{PYPI_API_BASE}/{package_name}/json"
+        url = f"{PYPI_API_BASE}/{normalized_name}/json"
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -111,7 +116,13 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             continue
 
         # Determine internal status based on repository URL
-        internal = repository_url == ""
+        if repository_url:
+            if "github.com/statisticsnorway" not in repository_url:
+                print(f"Skipping {name} (external GitHub repository: {repository_url})")
+                continue
+            internal = False
+        else:
+            internal = True
 
         # Add all relevant columns
         formatted_results.append({
