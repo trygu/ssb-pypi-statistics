@@ -28,9 +28,6 @@ def fetch_pypi_metadata(package_name):
         if response.status_code == 200:
             data = response.json()
             owner_name = data["info"].get("author", "N/A")
-            owner_email = data["info"].get("author_email", "")
-            if "@ssb.no" in owner_email:
-                return {"Owner Name": owner_name, "Homepage": homepage, "Internal": True}
             return {"Owner Name": owner_name, "Homepage": homepage, "Internal": False}
 
         print(f"PyPi package '{package_name}' not found.")
@@ -55,10 +52,6 @@ def fetch_cran_metadata(package_name):
                 None,
             )
             owner_name = re.sub(r"<.*?>", "", maintainer_line.split(":", 1)[1].strip()) if maintainer_line else "N/A"
-            owner_email_match = re.search(r"<(.+?)>", maintainer_line) if maintainer_line else None
-            owner_email = owner_email_match.group(1) if owner_email_match else ""
-            if "@ssb.no" in owner_email:
-                return {"Owner Name": owner_name, "Homepage": homepage, "Internal": True}
             return {"Owner Name": owner_name, "Homepage": homepage, "Internal": False}
 
         print(f"CRAN package '{package_name}' not found.")
@@ -112,23 +105,13 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
         platform = result.get("platform", "").lower()
         repository_url = result.get("repository_url", "").strip()
 
-        # Fetch relevant metadata
-        if platform == "pypi":
-            metadata = fetch_pypi_metadata(name)
-        elif platform == "cran":
-            metadata = fetch_cran_metadata(name)
-        else:
-            metadata = {"Owner Name": "N/A", "Homepage": "N/A", "Internal": False}
-
         # Skip test libraries
         if name.startswith("ssb-libtest"):
             print(f"Skipping test library: {name}")
             continue
 
-        # Skip if not internal
-        if not metadata.get("Internal", False):
-            print(f"Skipping {name} (no maintainer or owner with '@ssb.no' email)")
-            continue
+        # Determine internal status based on repository URL
+        internal = repository_url == ""
 
         # Add all relevant columns
         formatted_results.append({
@@ -137,10 +120,10 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
             "Latest Version": result.get("latest_release_number", "N/A"),
             "Last Updated": result.get("latest_release_published_at", "N/A"),
             "Description": result.get("description", "N/A"),
-            "Homepage": metadata.get("Homepage", "N/A"),
+            "Homepage": result.get("homepage", "N/A"),
             "Repository": repository_url,
-            "Owner Name": metadata.get("Owner Name", "N/A"),
-            "Internal": metadata.get("Internal", False),
+            "Owner Name": result.get("owner", "N/A"),
+            "Internal": internal,
             "Contributors": result.get("contributors_count", 0),
             "Stars": result.get("stars", 0),
             "Forks": result.get("forks", 0),
@@ -154,13 +137,6 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
 
     # Create DataFrame and sort by Last Updated DESC
     df = pd.DataFrame(deduplicated_results)
-
-    # Fix CRAN URLs to preserve case
-    df["Homepage"] = df.apply(
-        lambda row: CRAN_PACKAGE_PAGE.format(row["Name"]) if row["Platform"].lower() == "cran" else row["Homepage"],
-        axis=1,
-    )
-
     df["Last Updated"] = pd.to_datetime(df["Last Updated"], errors="coerce")
     df.sort_values(by="Last Updated", ascending=False, inplace=True)
 
