@@ -120,6 +120,11 @@ def save_results_to_csv(results, output_file="./src/results.csv"):
         else:
             metadata = {"Owner Name": "N/A", "Homepage": "N/A", "Internal": False}
 
+        # Skip test libraries
+        if name.startswith("ssb-libtest"):
+            print(f"Skipping test library: {name}")
+            continue
+
         # Skip if not internal
         if not metadata.get("Internal", False):
             print(f"Skipping {name} (no maintainer or owner with '@ssb.no' email)")
