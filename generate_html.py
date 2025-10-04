@@ -74,5 +74,23 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
 
     print(f"HTML file generated at '{output_file}'.")
 
+def generate_both_pages(csv_file="./src/results.csv"):
+    """Generate both Norwegian and English HTML pages from the CSV data."""
+    print("Generating Norwegian page...")
+    generate_html(
+        csv_file=csv_file,
+        template_file="./src/table_template.html",
+        output_file="./src/index.html"
+    )
+    
+    print("Generating English page...")
+    generate_html(
+        csv_file=csv_file,
+        template_file="./src/table_template_en.html",
+        output_file="./src/index_en.html"
+    )
+    
+    print("Both Norwegian and English pages generated successfully!")
+
 if __name__ == "__main__":
-    generate_html()
+    generate_both_pages()

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oversikt over publiserte pakker</title>
+    <title>Overview of Published Packages</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
@@ -151,25 +151,25 @@
 <body>
     <header>
         <img id="ssb-logo" src="https://www.ssb.no/_/asset/mimir:0000019377e98930/SSB_logo_black.svg" alt="SSB Logo">
-        <h1>Oversikt over publiserte pakker</h1>
+        <h1>Overview of Published Packages</h1>
         <div class="language-switcher">
-            <span class="current-lang">NO</span>
-            <a href="index_en.html" class="lang-link">EN</a>
+            <a href="index.html" class="lang-link">NO</a>
+            <span class="current-lang">EN</span>
         </div>
     </header>
 
     <div id="stats">
-        <p>Totalt Antall Pakker: <span id="total-packages">Laster...</span></p>
-        <p>Sist oppdatert: <span id='last-updated'>2025-10-04 20:31:02</span></p>
-        <h2>Pakker etter Plattform:</h2>
+        <p>Total Number of Packages: <span id="total-packages">Loading...</span></p>
+        <p>Last updated: <span id='last-updated'>2025-10-04 20:31:02</span></p>
+        <h2>Packages by Platform:</h2>
         <ul id="platform-counts"></ul>
     </div>
 
     <div class="actions">
-        <button id="download-csv" class="action-button">Last ned CSV</button>
+        <button id="download-csv" class="action-button">Download CSV</button>
         <a id="duckdb-button" class="action-button"
-            href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto%20detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Summarize-the-table%0ASUMMARIZE-ssb_packages~"
-            target="_blank">Åpne i DuckDB</a>
+            href="https://shell.duckdb.org/#queries=v0,%20%20-Load-CSV-file%2C-auto-detecting-column-name-and-types%0ACREATE-TABLE-ssb_packages-AS%0ASELECT-*%0AFROM-read_csv_auto(%27https%3A%2F%2Ftrygu.github.io%2Fssb%20pypi%20statistics%2Fresults.csv%27)~,%20%20-Summarize-the-table%0ASUMMARIZE-ssb_packages~"
+            target="_blank">Open in DuckDB</a>
     </div>
 
     <div id="table-container"></div>
@@ -199,7 +199,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Aktivitet',
+                        label: 'Activity',
                         data: data,
                         borderColor: '#274247',
                         borderWidth: 2,
@@ -226,7 +226,7 @@
             const li = document.createElement("li");
             li.className = "platform-item";
             li.innerHTML = `
-                <span>${platform}: ${count} pakker</span>
+                <span>${platform}: ${count} packages</span>
                 <canvas id="sparkline-${platform}" class="sparkline"></canvas>
             `;
             platformList.appendChild(li);
@@ -247,14 +247,14 @@
                 { column: "Last Updated", dir: "desc" },
             ],
             columns: [
-                { title: "Navn", field: "Name", formatter: "html" },
-                { title: "Plattform", field: "Platform" },
-                { title: "Siste versjon", field: "Latest Version" },
-                { title: "Antall publiseringer", field: "Number of releases" },
-                { title: "Sist oppdatert", field: "Last Updated", sorter: "date" },
-                { title: "Hjemmeside", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
+                { title: "Name", field: "Name", formatter: "html" },
+                { title: "Platform", field: "Platform" },
+                { title: "Latest Version", field: "Latest Version" },
+                { title: "Number of Releases", field: "Number of releases" },
+                { title: "Last Updated", field: "Last Updated", sorter: "date" },
+                { title: "Homepage", field: "Homepage", formatter: "link", formatterParams: { target: "_blank" } },
                 { title: "Repository", field: "Repository", formatter: "link", formatterParams: { target: "_blank" } },
-                { title: "Eier", field: "Owner Name" },
+                { title: "Owner", field: "Owner Name" },
             ],
         });
 
