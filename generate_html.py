@@ -31,7 +31,12 @@ def generate_html(csv_file="./src/results.csv", template_file="./src/table_templ
         sanitized_table_data = []
     else:
         # Sanitize and calculate statistics
-        sanitized_table_data = df.applymap(sanitize).to_dict(orient="records")
+        if hasattr(df, "map"):
+            sanitized_df = df.map(sanitize)
+        else:
+            sanitized_df = df.applymap(sanitize)
+
+        sanitized_table_data = sanitized_df.to_dict(orient="records")
         total_packages = len(df)
         platform_counts = df['Platform'].value_counts().to_dict()
 
