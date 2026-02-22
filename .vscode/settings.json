@@ -1,0 +1,6 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "poetry": true,
+        "/Users/trygve/local-code/ssb-pypi-statistics/.venv/bin/python": true
+    }
+}
